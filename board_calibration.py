@@ -1,7 +1,8 @@
 import cv2
 from math import inf
 import pickle
-from helper import rotateMatrix
+from helper import rotateMatrix, perspective_transform
+import numpy as np
 
 cap = cv2.VideoCapture(0)
 board_dimensions = (7, 7)
@@ -78,6 +79,11 @@ while True:
             rotateMatrix(augmented_corners)
 
         print(augmented_corners)
+        pts1 = np.float32([list(augmented_corners[0][0]), list(augmented_corners[8][0]), list(augmented_corners[0][8]),
+                           list(augmented_corners[8][8])])
+
+        empty_board = perspective_transform(gray, pts1)
+        cv2.imwrite("empty_board.jpg", empty_board)
 
         for i in range(len(augmented_corners)):
             for j in range(len(augmented_corners[i])):

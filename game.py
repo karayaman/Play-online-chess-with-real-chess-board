@@ -13,12 +13,11 @@ class Game:
         self.we_play_white = True
         self.executed_moves = []  # Store the move detected on san format
         self.board = chess.Board()  # This object comes from the "chess" package, the moves are stored inside it (and it has other cool features such as showing all the "legal moves")
-        self.engine.say("Game started")
-        self.engine.runAndWait()
 
-    def register_move(self, previous_chessboard_image, new_board):
-        potential_squares = self.board_basics.get_potential_moves(previous_chessboard_image, new_board)
-        success, valid_move_string1 = self.get_valid_move(potential_squares)
+
+    def register_move(self, fgmask):
+        potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask)
+        success, valid_move_string1 = self.get_valid_move(potential_squares, potential_moves)
         print("Valid move string 1:" + valid_move_string1)
         if not success:
             self.engine.say("Move registration failed. Please redo your move.")
@@ -33,28 +32,22 @@ class Game:
 
         if self.internet_game.is_our_turn:
             self.internet_game.move(valid_move_UCI)
+        else:
+            self.engine.say(valid_move_UCI)
+            self.engine.runAndWait()
 
         self.internet_game.is_our_turn = not self.internet_game.is_our_turn
 
-        self.engine.say(valid_move_string1)
-        self.engine.runAndWait()
         return True
 
-    def get_valid_move(self, potential_squares):
-        potential_moves = []
-        n = len(potential_squares)
-        for i in range(n):
-            for j in range(i):
-                total_score = potential_squares[i][0] + potential_squares[j][0]
-                potential_moves.append((total_score, potential_squares[i][1], potential_squares[j][1]))
-                potential_moves.append((total_score, potential_squares[j][1], potential_squares[i][1]))
-
-        potential_moves.sort(reverse=True)
+    def get_valid_move(self, potential_squares, potential_moves):
+        print("Potential squares")
+        print(potential_squares)
         print("Potential moves")
         print(potential_moves)
 
         valid_move_string = ""
-        for score, start, arrival in potential_moves[:4]:
+        for score, start, arrival in potential_moves:
             if valid_move_string:
                 break
             uci_move = start + arrival
@@ -73,8 +66,6 @@ class Game:
                     valid_move_string = uci_move_promoted
                     print("There has been a promotion to queen")
 
-        potential_squares.sort(reverse=True)
-        potential_squares = potential_squares[:4]
         potential_squares = [square[1] for square in potential_squares]
         print(potential_squares)
         # Detect castling king side with white

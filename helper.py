@@ -1,3 +1,18 @@
+import cv2
+import numpy as np
+
+
+# https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_geometric_transformations/py_geometric_transformations.html
+def perspective_transform(image, pts1):
+    pts2 = np.float32([[0, 0], [0, 640], [640, 0], [640, 640]])
+
+    M = cv2.getPerspectiveTransform(pts1, pts2)
+
+    dst = cv2.warpPerspective(image, M, (640, 640))
+
+    return dst
+
+
 # https://www.geeksforgeeks.org/inplace-rotate-square-matrix-by-90-degrees/
 def rotateMatrix(mat):
     N = len(mat)
