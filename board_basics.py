@@ -1,5 +1,8 @@
 # The code is modified from https://github.com/Stanou01260/chessbot_python/blob/master/code/board_basics.py
 
+import cv2
+
+
 class Board_basics:
     def __init__(self):
         pass
@@ -12,6 +15,9 @@ class Board_basics:
         minY = int(row * height / 8)
         maxY = int((row + 1) * height / 8)
         square = board_img[minY:maxY, minX:maxX]
+
+        _, square = cv2.threshold(square, 120, 255,
+                                  cv2.THRESH_BINARY)
         return square
 
     def convert_row_column_to_square_name(self, row, column, is_white_on_bottom):

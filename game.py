@@ -6,22 +6,20 @@ import numpy as np
 
 
 class Game:
-    def __init__(self, board_basics, engine):
+    def __init__(self, board_basics, speech_thread):
         self.internet_game = Internet_game()
         self.board_basics = board_basics
-        self.engine = engine
+        self.speech_thread = speech_thread
         self.we_play_white = True
         self.executed_moves = []  # Store the move detected on san format
         self.board = chess.Board()  # This object comes from the "chess" package, the moves are stored inside it (and it has other cool features such as showing all the "legal moves")
-
 
     def register_move(self, fgmask):
         potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask)
         success, valid_move_string1 = self.get_valid_move(potential_squares, potential_moves)
         print("Valid move string 1:" + valid_move_string1)
         if not success:
-            self.engine.say("Move registration failed. Please redo your move.")
-            self.engine.runAndWait()
+            self.speech_thread.put_text("Move registration failed. Please redo your move.")
             return False
 
         valid_move_UCI = chess.Move.from_uci(valid_move_string1)
@@ -33,8 +31,7 @@ class Game:
         if self.internet_game.is_our_turn:
             self.internet_game.move(valid_move_UCI)
         else:
-            self.engine.say(valid_move_UCI)
-            self.engine.runAndWait()
+            self.speech_thread.put_text(valid_move_string1)
 
         self.internet_game.is_our_turn = not self.internet_game.is_our_turn
 
