@@ -25,7 +25,7 @@ class Game:
         valid_move_UCI = chess.Move.from_uci(valid_move_string1)
 
         print("Move has been registered")
-        self.executed_moves = np.append(self.executed_moves, self.board.san(valid_move_UCI))
+        self.executed_moves.append(self.board.san(valid_move_UCI))
         self.board.push(valid_move_UCI)
 
         if self.internet_game.is_our_turn:

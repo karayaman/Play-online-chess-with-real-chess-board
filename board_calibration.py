@@ -83,7 +83,7 @@ while True:
                            list(augmented_corners[8][8])])
 
         empty_board = perspective_transform(gray, pts1)
-        cv2.imwrite("empty_board.jpg", empty_board)
+        #cv2.imwrite("empty_board.jpg", empty_board)
 
         for i in range(len(augmented_corners)):
             for j in range(len(augmented_corners[i])):
