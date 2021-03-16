@@ -8,7 +8,7 @@ Program that enables you to play online chess using real chess board.  Using com
 3. Place your webcam near to your chessboard so that all of the squares and pieces can be clearly seen by it.
 4. Remove all pieces from your chess board.
 5. Run "board_calibration.py".
-6. Check that corners of your chess board are correctly detected by "board_calibration.py" and press key "q" to save detected chess board corners.
+6. Check that corners of your chess board are correctly detected by "board_calibration.py" and press key "q" to save detected chess board corners. The square covered by points (0,0), (0,1),(1,0) and (1,1) should be a8.
 7. Note that "constants.bin" file is created or modified.
 
 ## Usage

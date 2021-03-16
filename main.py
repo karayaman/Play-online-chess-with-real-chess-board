@@ -3,7 +3,7 @@ import pickle
 from game import Game
 from board_basics import Board_basics
 import numpy as np
-from helper import perspective_transform
+from helper import perspective_transform, normalize_illumination
 from speech import Speech_thread
 from videocapture import Video_capture_thread
 
@@ -52,7 +52,7 @@ def waitUntilMoveCompletes():
     while True:
         frame = video_capture_thread.get_frame()
         frame = perspective_transform(frame, pts1)
-        fgmask = move_fgbg.apply(frame)
+        fgmask = move_fgbg.apply(normalize_illumination(frame))
         motion_fgbg.apply(frame)
         mean = fgmask.mean()
         if mean < MOVE_END_THRESHOLD:
@@ -61,7 +61,7 @@ def waitUntilMoveCompletes():
     while fgmask.mean() > MOVE_START_THRESHOLD:
         frame = video_capture_thread.get_frame()
         frame = perspective_transform(frame, pts1)
-        new_fgmask = move_fgbg.apply(frame)
+        new_fgmask = move_fgbg.apply(normalize_illumination(frame))
         motion_fgbg.apply(frame)
         if abs(new_fgmask.mean() - fgmask.mean()) <= MOVE_MEAN_DIFFERENCE_THRESHOLD:
             fgmask = new_fgmask
@@ -78,7 +78,7 @@ def initialize_background_subtractors():
     while True:
         frame = video_capture_thread.get_frame()
         frame = perspective_transform(frame, pts1)
-        move_fgbg.apply(frame)
+        move_fgbg.apply(normalize_illumination(frame))
         fgmask = motion_fgbg.apply(frame)
         mean = fgmask.mean()
         if mean < MOTION_END_THRESHOLD:
@@ -98,16 +98,17 @@ while not game.board.is_game_over():
         # cv2.imwrite("prev_frame.jpg", frame)
         waitUntilMotionCompletes()
         frame, fgmask = waitUntilMoveCompletes()
+        move_fgbg.apply(normalize_illumination(frame), learningRate=1.0)
+        waitUntilMoveCompletes()
         if game.register_move(fgmask):
+            pass
             # cv2.imwrite(game.executed_moves[-1] + " frame.jpg", frame)
             # cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
-            move_fgbg.apply(frame, learningRate=1.0)
-            waitUntilMoveCompletes()
         else:
             pass
             # cv2.imwrite("frame_fail.jpg", frame)
             # cv2.imwrite("mask_fail.jpg", fgmask)
     else:
-        move_fgbg.apply(frame)
+        move_fgbg.apply(normalize_illumination(frame))
         fgmask = motion_fgbg.apply(frame)
 cv2.destroyAllWindows()
