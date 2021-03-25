@@ -30,7 +30,25 @@ Program that enables you to play online chess using real chess board.  Using com
 8. Notice that program actually makes your move on the internet game if it's your turn. Otherwise, wait until program says starting and ending squares of opponent's move. 
 9. Go to step 6.
 
+## Frequently Asked Questions
+
+### What is the program doing? How it works? 
+
+It tracks your chess board via webcam. You should place it on top of your chess board. Make sure there
+is enough light in the environment and all squares are clearly visible. When you make a move on your chess board, it understands the move you made and transfers it to chess GUI by simulating mouse clicks(It clicks starting and ending squares of your move). This way, using your chess board, you can play chess in any chess program either websites like lichess.org, chess.com or desktop programs like Fritz, Chessmaster etc.
+
+### Placing webcam on top of the chess board sounds difficult. Can I put my laptop aside with the web cam in the laptop display?
+
+Putting a laptop aside and using laptop's webcam won't work well with the latest release because program does not work well with side views. Personally, while using the program I am putting my laptop aside and it gives out moves via chess gui and show clocks. Instead of using laptop's webcam, I disable it
+and use my old android phone's camera as webcam using an app called DroidCam. I place my phone
+somewhere high enough(bookshelf for instance) so that all of the squares and pieces can be clearly seen by it.
+
+### How well it works?
+
+Using this software I am able to make up to 100 moves in 15+10 rapid online game without getting any errors.
+
 ## Required libraries
+
 - opencv
 - python-chess
 - pyautogui
