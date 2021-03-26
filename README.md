@@ -7,17 +7,19 @@ Program that enables you to play online chess using real chess board.  Using com
 
 2. Take screenshots of chess board of online game at starting position, one for when you play white and one for when you play black and save them as "white.JPG" and "black.JPG" similar to the images included in the source code.
 
-3. Place your webcam near to your chessboard so that all of the squares and pieces can be clearly seen by it.
+3. Enable auto promotion to queen from settings of online game.
 
-4. Remove all pieces from your chess board.
+4. Place your webcam near to your chessboard so that all of the squares and pieces can be clearly seen by it.
 
-5. Run "board_calibration.py".
+5. Remove all pieces from your chess board.
 
-6. Check that corners of your chess board are correctly detected by "board_calibration.py" and press key "q" to save detected chess board corners. You don't need to manually select chess board corners, it should be automatically detected by the program. The square covered by points (0,0), (0,1),(1,0) and (1,1) should be a8. Example chess board detection result:
+6. Run "board_calibration.py".
+
+7. Check that corners of your chess board are correctly detected by "board_calibration.py" and press key "q" to save detected chess board corners. You don't need to manually select chess board corners, it should be automatically detected by the program. The square covered by points (0,0), (0,1),(1,0) and (1,1) should be a8. Example chess board detection result:
 
    ![](https://github.com/karayaman/Play-online-chess-with-real-chess-board/blob/main/chessboard_detection_result.jpg?raw=true)
 
-7. Note that "constants.bin" file is created or modified.
+8. Note that "constants.bin" file is created or modified.
 
 ## Usage
 
@@ -46,6 +48,10 @@ somewhere high enough(bookshelf for instance) so that all of the squares and pie
 ### How well it works?
 
 Using this software I am able to make up to 100 moves in 15+10 rapid online game without getting any errors.
+
+### If I use the two exe-files (and not the py-files), where do I have to store the new white.JPG and black.JPG files?
+
+If you use the two exe-files( "main.exe" and "board_calibration.exe") you should create a folder for them and put the two exe-files, "white.JPG" and "black.JPG" files into that folder.
 
 ## Required libraries
 
