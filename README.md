@@ -53,6 +53,10 @@ Using this software I am able to make up to 100 moves in 15+10 rapid online game
 
 If you use the two exe-files( "main.exe" and "board_calibration.exe") you should create a folder for them and put the two exe-files, "white.JPG" and "black.JPG" files into that folder.
 
+### I am getting error message "Move registration failed. Please redo your move." What is the problem?
+
+Program asked you to redo your move because it understood that you made a move. However, it failed to figure out which move you made. This can happen if your board calibration is incorrect or color of your pieces are very similar to color of your squares. If latter is the case you will get this error message when playing white piece to light square or black piece to dark square. 
+
 ## Required libraries
 
 - opencv
