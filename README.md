@@ -41,7 +41,7 @@ is enough light in the environment and all squares are clearly visible. When you
 
 ### Placing webcam on top of the chess board sounds difficult. Can I put my laptop aside with the web cam in the laptop display?
 
-Putting a laptop aside and using laptop's webcam won't work well with the latest release because program does not work well with side views. Personally, while using the program I am putting my laptop aside and it gives out moves via chess gui and show clocks. Instead of using laptop's webcam, I disable it
+Yes, you can do that with a small chess board. However placing webcam on top of the chess board is recommended. Personally, while using the program I am putting my laptop aside and it gives out moves via chess gui and show clocks. Instead of using laptop's webcam, I disable it
 and use my old android phone's camera as webcam using an app called DroidCam. I place my phone
 somewhere high enough(bookshelf for instance) so that all of the squares and pieces can be clearly seen by it.
 

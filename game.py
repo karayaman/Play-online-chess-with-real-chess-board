@@ -1,5 +1,3 @@
-# The code is modified from https://github.com/Stanou01260/chessbot_python/blob/master/code/game_state_classes.py
-
 import chess
 from internet_game import Internet_game
 import numpy as np
@@ -11,8 +9,8 @@ class Game:
         self.board_basics = board_basics
         self.speech_thread = speech_thread
         self.we_play_white = True
-        self.executed_moves = []  # Store the move detected on san format
-        self.board = chess.Board()  # This object comes from the "chess" package, the moves are stored inside it (and it has other cool features such as showing all the "legal moves")
+        self.executed_moves = []
+        self.board = chess.Board()
 
     def register_move(self, fgmask):
         potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask)
@@ -37,6 +35,7 @@ class Game:
 
         return True
 
+    # https://github.com/Stanou01260/chessbot_python/blob/master/code/game_state_classes.py
     def get_valid_move(self, potential_squares, potential_moves):
         print("Potential squares")
         print(potential_squares)

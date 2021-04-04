@@ -1,12 +1,10 @@
-# The code is modified from https://github.com/Stanou01260/chessbot_python/blob/master/code/board_basics.py
-
 class Board_basics:
-    def __init__(self):
-        pass
+    def __init__(self, side_view_compensation):
+        self.d = [side_view_compensation, (0, 0)]
 
     def get_square_image(self, row, column,
-                         board_img):  # this functions assumes that there are 8*8 squares in the image, and that it is grayscale
-        height, width = board_img.shape
+                         board_img):
+        height, width = board_img.shape[:2]
         minX = int(column * width / 8)
         maxX = int((column + 1) * width / 8)
         minY = int(row * height / 8)
@@ -21,17 +19,14 @@ class Board_basics:
 
     def square_region(self, row, column):
         region = set()
-        for d_row in range(-1, 2):
+        for d_row, d_column in self.d:
             n_row = row + d_row
+            n_column = column + d_column
             if not (0 <= n_row < 8):
                 continue
-            region.add((n_row, column))
-
-        for d_column in range(-1, 2):
-            n_column = column + d_column
             if not (0 <= n_column < 8):
                 continue
-            region.add((row, n_column))
+            region.add((n_row, column))
         return region
 
     def get_potential_moves(self, fgmask):

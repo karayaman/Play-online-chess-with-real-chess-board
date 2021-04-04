@@ -83,7 +83,7 @@ while True:
                            list(augmented_corners[8][8])])
 
         empty_board = perspective_transform(gray, pts1)
-        #cv2.imwrite("empty_board.jpg", empty_board)
+        # cv2.imwrite("empty_board.jpg", empty_board)
 
         for i in range(len(augmented_corners)):
             for j in range(len(augmented_corners[i])):
@@ -99,8 +99,29 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+dx = [augmented_corners[i][1][0] - augmented_corners[i - 1][1][0] for i in range(2, 8)]
+dy = [augmented_corners[1][i][1] - augmented_corners[1][i - 1][1] for i in range(2, 8)]
+increasing_dx = sum(dx[i] > dx[i - 1] for i in range(1, len(dx)))
+decreasing_dx = sum(dx[i] < dx[i - 1] for i in range(1, len(dx)))
+increasing_dy = sum(dy[i] > dy[i - 1] for i in range(1, len(dy)))
+decreasing_dy = sum(dy[i] < dy[i - 1] for i in range(1, len(dy)))
+dx = 0
+dy = 0
+maximum = max([increasing_dx, increasing_dy, decreasing_dx, decreasing_dy])
+if maximum == increasing_dx and increasing_dx != decreasing_dx:
+    dx = 1
+elif maximum == decreasing_dx and increasing_dx != decreasing_dx:
+    dx = -1
+elif maximum == decreasing_dy and increasing_dy != decreasing_dy:
+    dy = 1
+elif increasing_dy != decreasing_dy:
+    dy = -1
+
+side_view_compensation = (dx, dy)
+print("Maximum " + str(maximum))
+print("Side view compensation" + str(side_view_compensation))
 print("Constants " + str(augmented_corners))
 filename = 'constants.bin'
 outfile = open(filename, 'wb')
-pickle.dump(augmented_corners, outfile)
+pickle.dump([augmented_corners, side_view_compensation], outfile)
 outfile.close()
