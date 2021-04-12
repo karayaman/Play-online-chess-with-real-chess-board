@@ -39,7 +39,7 @@ Program that enables you to play online chess using real chess board.  Using com
 It tracks your chess board via webcam. You should place it on top of your chess board. Make sure there
 is enough light in the environment and all squares are clearly visible. When you make a move on your chess board, it understands the move you made and transfers it to chess GUI by simulating mouse clicks(It clicks starting and ending squares of your move). This way, using your chess board, you can play chess in any chess program either websites like lichess.org, chess.com or desktop programs like Fritz, Chessmaster etc.
 
-### Placing webcam on top of the chess board sounds difficult. Can I put my laptop aside with the web cam in the laptop display?
+### Placing webcam on top of the chess board sounds difficult. Can I put my laptop aside with the webcam in the laptop display?
 
 Yes, you can do that with a small chess board. However placing webcam on top of the chess board is recommended. Personally, while using the program I am putting my laptop aside and it gives out moves via chess gui and show clocks. Instead of using laptop's webcam, I disable it
 and use my old android phone's camera as webcam using an app called DroidCam. I place my phone
@@ -56,6 +56,10 @@ If you use the two exe-files( "main.exe" and "board_calibration.exe") you should
 ### I am getting error message "Move registration failed. Please redo your move." What is the problem?
 
 Program asked you to redo your move because it understood that you made a move. However, it failed to figure out which move you made. This can happen if your board calibration is incorrect or color of your pieces are very similar to color of your squares. If latter is the case you will get this error message when playing white piece to light square or black piece to dark square. 
+
+### Why it takes forever to detect corners of the chess board?
+
+It should detect corners of the chess board almost immediately. Please do not spend any time waiting for it to detect corners of the chess board. If it can't detect corners of the chess board almost immediately, this means that it can't see your chess board well from that position/angle. Placing your webcam somewhere a bit higher or lower might solve the issue.
 
 ## Required libraries
 
