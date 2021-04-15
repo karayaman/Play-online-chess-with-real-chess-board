@@ -69,3 +69,4 @@ It should detect corners of the chess board almost immediately. Please do not sp
 - mss
 - numpy
 - pyttsx3
+- skimage

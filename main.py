@@ -7,11 +7,10 @@ from helper import perspective_transform
 from speech import Speech_thread
 from videocapture import Video_capture_thread
 
-MOTION_END_THRESHOLD = 0.5
 MOTION_START_THRESHOLD = 1.0
-MOVE_END_THRESHOLD = 100.0
 HISTORY = 100
 MAX_MOVE_MEAN = 50
+COUNTER_MAX_VALUE = 3
 
 move_fgbg = cv2.createBackgroundSubtractorKNN()
 motion_fgbg = cv2.createBackgroundSubtractorKNN(history=HISTORY)
@@ -38,31 +37,38 @@ pts1 = np.float32([list(corners[0][0]), list(corners[8][0]), list(corners[0][8])
 
 
 def waitUntilMotionCompletes():
-    while True:
+    counter = 0
+    while counter < COUNTER_MAX_VALUE:
         frame = video_capture_thread.get_frame()
         frame = perspective_transform(frame, pts1)
         fgmask = motion_fgbg.apply(frame)
         ret, fgmask = cv2.threshold(fgmask, 250, 255, cv2.THRESH_BINARY)
         mean = fgmask.mean()
-        if mean < MOTION_END_THRESHOLD:
-            break
+        if mean < MOTION_START_THRESHOLD:
+            counter += 1
+        else:
+            counter = 0
 
 
 def stabilize_background_subtractors():
     best_mean = float("inf")
-    while True:
+    counter = 0
+    while counter < COUNTER_MAX_VALUE:
         frame = video_capture_thread.get_frame()
         frame = perspective_transform(frame, pts1)
         move_fgbg.apply(frame)
-        fgmask = motion_fgbg.apply(frame)
+        fgmask = motion_fgbg.apply(frame, learningRate=0.1)
         ret, fgmask = cv2.threshold(fgmask, 250, 255, cv2.THRESH_BINARY)
         mean = fgmask.mean()
         if mean >= best_mean:
-            break
-        best_mean = mean
+            counter += 1
+        else:
+            best_mean = mean
+            counter = 0
 
     best_mean = float("inf")
-    while True:
+    counter = 0
+    while counter < COUNTER_MAX_VALUE:
         frame = video_capture_thread.get_frame()
         frame = perspective_transform(frame, pts1)
         fgmask = move_fgbg.apply(frame, learningRate=0.1)
@@ -70,8 +76,10 @@ def stabilize_background_subtractors():
         motion_fgbg.apply(frame)
         mean = fgmask.mean()
         if mean >= best_mean:
-            break
-        best_mean = mean
+            counter += 1
+        else:
+            best_mean = mean
+            counter = 0
 
 
 stabilize_background_subtractors()
@@ -81,26 +89,33 @@ while not game.board.is_game_over():
     frame = perspective_transform(frame, pts1)
     fgmask = motion_fgbg.apply(frame)
     ret, fgmask = cv2.threshold(fgmask, 250, 255, cv2.THRESH_BINARY)
+    kernel = np.ones((11, 11), np.uint8)
+    fgmask = cv2.erode(fgmask, kernel, iterations=1)
     mean = fgmask.mean()
     if mean > MOTION_START_THRESHOLD:
+        #cv2.imwrite("motion.jpg", fgmask)
         waitUntilMotionCompletes()
         frame = video_capture_thread.get_frame()
         frame = perspective_transform(frame, pts1)
+        background = move_fgbg.getBackgroundImage()
         fgmask = move_fgbg.apply(frame, learningRate=0.0)
         ret, fgmask = cv2.threshold(fgmask, 250, 255, cv2.THRESH_BINARY)
+        #print("Move mean " + str(fgmask.mean()))
         if fgmask.mean() >= MAX_MOVE_MEAN:
             fgmask = np.zeros(fgmask.shape, dtype=np.uint8)
         motion_fgbg.apply(frame)
         move_fgbg.apply(frame, learningRate=1.0)
         stabilize_background_subtractors()
-        if game.register_move(fgmask):
+        if game.register_move(fgmask, background, frame):
             pass
-            # cv2.imwrite(game.executed_moves[-1] + " frame.jpg", frame)
-            # cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
+            #cv2.imwrite(game.executed_moves[-1] + " frame.jpg", frame)
+            #cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
+            #cv2.imwrite(game.executed_moves[-1] + " background.jpg", background)
         else:
             pass
-            # cv2.imwrite("frame_fail.jpg", frame)
-            # cv2.imwrite("mask_fail.jpg", fgmask)
+            #cv2.imwrite("frame_fail.jpg", frame)
+            #cv2.imwrite("mask_fail.jpg", fgmask)
+            #cv2.imwrite("background_fail.jpg", background)
     else:
         move_fgbg.apply(frame)
 cv2.destroyAllWindows()

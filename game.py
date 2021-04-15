@@ -12,8 +12,8 @@ class Game:
         self.executed_moves = []
         self.board = chess.Board()
 
-    def register_move(self, fgmask):
-        potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask)
+    def register_move(self, fgmask, previous_frame, next_frame):
+        potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask, previous_frame, next_frame)
         success, valid_move_string1 = self.get_valid_move(potential_squares, potential_moves)
         print("Valid move string 1:" + valid_move_string1)
         if not success:

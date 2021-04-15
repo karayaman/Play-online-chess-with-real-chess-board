@@ -1,3 +1,6 @@
+from skimage.metrics import structural_similarity
+
+
 class Board_basics:
     def __init__(self, side_view_compensation):
         self.d = [side_view_compensation, (0, 0)]
@@ -29,9 +32,12 @@ class Board_basics:
             region.add((n_row, column))
         return region
 
-    def get_potential_moves(self, fgmask):
+    def get_potential_moves(self, fgmask, previous_frame, next_frame):
         board = [[self.get_square_image(row, column, fgmask).mean() for column in range(8)] for row in range(8)]
-
+        previous_board = [[self.get_square_image(row, column, previous_frame) for column in range(8)] for row in
+                          range(8)]
+        next_board = [[self.get_square_image(row, column, next_frame) for column in range(8)] for row in
+                      range(8)]
         potential_squares = []
         for row in range(8):
             for column in range(8):
@@ -48,6 +54,12 @@ class Board_basics:
             start_region = self.square_region(start_row, start_column)
             for arrival_square_score, arrival_row, arrival_column in potential_squares:
                 if (start_row, start_column) == (arrival_row, arrival_column):
+                    continue
+                ssim_start = structural_similarity(next_board[start_row][start_column],
+                                                   previous_board[start_row][start_column], multichannel=True)
+                ssim_arrival = structural_similarity(next_board[arrival_row][arrival_column],
+                                                     previous_board[arrival_row][arrival_column], multichannel=True)
+                if ssim_start > 0.8 or ssim_arrival > 0.8:
                     continue
                 arrival_region = self.square_region(arrival_row, arrival_column)
                 region = start_region.union(arrival_region)

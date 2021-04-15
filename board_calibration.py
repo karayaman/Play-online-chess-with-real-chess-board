@@ -1,5 +1,5 @@
 import cv2
-from math import inf
+from math import inf, sqrt
 import pickle
 from helper import rotateMatrix, perspective_transform
 import numpy as np
@@ -99,26 +99,28 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
-dx = [augmented_corners[i][1][0] - augmented_corners[i - 1][1][0] for i in range(2, 8)]
-dy = [augmented_corners[1][i][1] - augmented_corners[1][i - 1][1] for i in range(2, 8)]
-increasing_dx = sum(dx[i] > dx[i - 1] for i in range(1, len(dx)))
-decreasing_dx = sum(dx[i] < dx[i - 1] for i in range(1, len(dx)))
-increasing_dy = sum(dy[i] > dy[i - 1] for i in range(1, len(dy)))
-decreasing_dy = sum(dy[i] < dy[i - 1] for i in range(1, len(dy)))
-dx = 0
-dy = 0
-maximum = max([increasing_dx, increasing_dy, decreasing_dx, decreasing_dy])
-if maximum == increasing_dx and increasing_dx != decreasing_dx:
-    dx = 1
-elif maximum == decreasing_dx and increasing_dx != decreasing_dx:
-    dx = -1
-elif maximum == decreasing_dy and increasing_dy != decreasing_dy:
-    dy = 1
-elif increasing_dy != decreasing_dy:
-    dy = -1
 
-side_view_compensation = (dx, dy)
-print("Maximum " + str(maximum))
+
+def euclidean_distance(first, second):
+    return sqrt((first[0] - second[0]) ** 2 + (first[1] - second[1]) ** 2)
+
+
+first_row = euclidean_distance(augmented_corners[1][1], augmented_corners[1][7])
+last_row = euclidean_distance(augmented_corners[7][1], augmented_corners[7][7])
+first_column = euclidean_distance(augmented_corners[1][1], augmented_corners[7][1])
+last_column = euclidean_distance(augmented_corners[1][7], augmented_corners[7][7])
+
+if abs(first_row - last_row) >= abs(first_column - last_column):
+    if first_row >= last_row:
+        side_view_compensation = (-1, 0)
+    else:
+        side_view_compensation = (1, 0)
+else:
+    if first_column >= last_column:
+        side_view_compensation = (0, 1)
+    else:
+        side_view_compensation = (0, -1)
+
 print("Side view compensation" + str(side_view_compensation))
 print("Constants " + str(augmented_corners))
 filename = 'constants.bin'
