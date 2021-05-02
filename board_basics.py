@@ -2,8 +2,9 @@ from skimage.metrics import structural_similarity
 
 
 class Board_basics:
-    def __init__(self, side_view_compensation):
+    def __init__(self, side_view_compensation, rotation_count):
         self.d = [side_view_compensation, (0, 0)]
+        self.rotation_count = rotation_count
 
     def get_square_image(self, row, column,
                          board_img):
@@ -16,8 +17,18 @@ class Board_basics:
         return square
 
     def convert_row_column_to_square_name(self, row, column):
-        number = repr(8 - row)
-        letter = str(chr(97 + column))
+        if self.rotation_count == 0:
+            number = repr(8 - row)
+            letter = str(chr(97 + column))
+        elif self.rotation_count == 1:
+            number = repr(8 - column)
+            letter = str(chr(97 + (7 - row)))
+        elif self.rotation_count == 2:
+            number = repr(row + 1)
+            letter = str(chr(97 + (7 - column)))
+        elif self.rotation_count == 3:
+            number = repr(column + 1)
+            letter = str(chr(97 + row))
         return letter + number
 
     def square_region(self, row, column):
@@ -44,6 +55,14 @@ class Board_basics:
                 score = board[row][column]
                 if score < 10.0:
                     continue
+
+                ssim = structural_similarity(next_board[row][column],
+                                             previous_board[row][column], multichannel=True)
+
+                #print(ssim)
+                if ssim > 0.75:
+                    continue
+
                 potential_squares.append((score, row, column))
 
         potential_squares.sort(reverse=True)
@@ -54,12 +73,6 @@ class Board_basics:
             start_region = self.square_region(start_row, start_column)
             for arrival_square_score, arrival_row, arrival_column in potential_squares:
                 if (start_row, start_column) == (arrival_row, arrival_column):
-                    continue
-                ssim_start = structural_similarity(next_board[start_row][start_column],
-                                                   previous_board[start_row][start_column], multichannel=True)
-                ssim_arrival = structural_similarity(next_board[arrival_row][arrival_column],
-                                                     previous_board[arrival_row][arrival_column], multichannel=True)
-                if ssim_start > 0.8 or ssim_arrival > 0.8:
                     continue
                 arrival_region = self.square_region(arrival_row, arrival_column)
                 region = start_region.union(arrival_region)

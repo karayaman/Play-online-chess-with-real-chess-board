@@ -17,10 +17,10 @@ motion_fgbg = cv2.createBackgroundSubtractorKNN(history=HISTORY)
 
 filename = 'constants.bin'
 infile = open(filename, 'rb')
-corners, side_view_compensation = pickle.load(infile)
+corners, side_view_compensation, rotation_count = pickle.load(infile)
 infile.close()
 
-board_basics = Board_basics(side_view_compensation)
+board_basics = Board_basics(side_view_compensation, rotation_count)
 
 speech_thread = Speech_thread()
 speech_thread.daemon = True
@@ -81,8 +81,10 @@ def stabilize_background_subtractors():
             best_mean = mean
             counter = 0
 
+    return frame
 
-stabilize_background_subtractors()
+
+previous_frame = stabilize_background_subtractors()
 speech_thread.put_text("Game started")
 while not game.board.is_game_over():
     frame = video_capture_thread.get_frame()
@@ -97,7 +99,7 @@ while not game.board.is_game_over():
         waitUntilMotionCompletes()
         frame = video_capture_thread.get_frame()
         frame = perspective_transform(frame, pts1)
-        background = move_fgbg.getBackgroundImage()
+        # background = move_fgbg.getBackgroundImage()
         fgmask = move_fgbg.apply(frame, learningRate=0.0)
         ret, fgmask = cv2.threshold(fgmask, 250, 255, cv2.THRESH_BINARY)
         #print("Move mean " + str(fgmask.mean()))
@@ -105,17 +107,19 @@ while not game.board.is_game_over():
             fgmask = np.zeros(fgmask.shape, dtype=np.uint8)
         motion_fgbg.apply(frame)
         move_fgbg.apply(frame, learningRate=1.0)
-        stabilize_background_subtractors()
-        if game.register_move(fgmask, background, frame):
+        last_frame = stabilize_background_subtractors()
+        if game.register_move(fgmask, previous_frame, frame):
             pass
             #cv2.imwrite(game.executed_moves[-1] + " frame.jpg", frame)
             #cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
-            #cv2.imwrite(game.executed_moves[-1] + " background.jpg", background)
+            #cv2.imwrite(game.executed_moves[-1] + " background.jpg", previous_frame)
         else:
             pass
             #cv2.imwrite("frame_fail.jpg", frame)
             #cv2.imwrite("mask_fail.jpg", fgmask)
-            #cv2.imwrite("background_fail.jpg", background)
+            #cv2.imwrite("background_fail.jpg", previous_frame)
+        previous_frame = last_frame
     else:
         move_fgbg.apply(frame)
+        previous_frame = frame
 cv2.destroyAllWindows()
