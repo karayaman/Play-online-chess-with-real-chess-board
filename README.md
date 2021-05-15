@@ -32,6 +32,12 @@ Program that enables you to play online chess using real chess board.  Using com
 8. Notice that program actually makes your move on the internet game if it's your turn. Otherwise, wait until program says starting and ending squares of opponent's move. 
 9. Go to step 6.
 
+## GUI
+
+You can run "gui.py" to open the GUI. You can use it to do the steps in Setup and Usage sections and customize how you use the software. You can click "Start Game" button instead of running "main.py" and "Board Calibration" button instead of running "board_calibration.py".
+
+![](https://github.com/karayaman/Play-online-chess-with-real-chess-board/blob/main/gui.JPG?raw=true)
+
 ## Frequently Asked Questions
 
 ### What is the program doing? How it works? 
