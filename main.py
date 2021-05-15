@@ -6,6 +6,24 @@ import numpy as np
 from helper import perspective_transform
 from speech import Speech_thread
 from videocapture import Video_capture_thread
+import sys
+
+use_template = True
+make_opponent = False
+comment_me = False
+comment_opponent = False
+start_delay = 5  # seconds
+for argument in sys.argv:
+    if argument == "no-template":
+        use_template = False
+    elif argument == "make-opponent":
+        make_opponent = True
+    elif argument == "comment-me":
+        comment_me = True
+    elif argument == "comment-opponent":
+        comment_opponent = True
+    elif argument.startswith("delay="):
+        start_delay = int("".join(c for c in argument if c.isdigit()))
 
 MOTION_START_THRESHOLD = 1.0
 HISTORY = 100
@@ -26,7 +44,7 @@ speech_thread = Speech_thread()
 speech_thread.daemon = True
 speech_thread.start()
 
-game = Game(board_basics, speech_thread)
+game = Game(board_basics, speech_thread, use_template, make_opponent, start_delay, comment_me, comment_opponent)
 
 video_capture_thread = Video_capture_thread()
 video_capture_thread.daemon = True
@@ -87,6 +105,7 @@ def stabilize_background_subtractors():
 previous_frame = stabilize_background_subtractors()
 speech_thread.put_text("Game started")
 while not game.board.is_game_over():
+    sys.stdout.flush()
     frame = video_capture_thread.get_frame()
     frame = perspective_transform(frame, pts1)
     fgmask = motion_fgbg.apply(frame)
@@ -95,14 +114,14 @@ while not game.board.is_game_over():
     fgmask = cv2.erode(fgmask, kernel, iterations=1)
     mean = fgmask.mean()
     if mean > MOTION_START_THRESHOLD:
-        #cv2.imwrite("motion.jpg", fgmask)
+        # cv2.imwrite("motion.jpg", fgmask)
         waitUntilMotionCompletes()
         frame = video_capture_thread.get_frame()
         frame = perspective_transform(frame, pts1)
-        # background = move_fgbg.getBackgroundImage()
         fgmask = move_fgbg.apply(frame, learningRate=0.0)
-        ret, fgmask = cv2.threshold(fgmask, 250, 255, cv2.THRESH_BINARY)
-        #print("Move mean " + str(fgmask.mean()))
+        if fgmask.mean() >= 10.0:
+            ret, fgmask = cv2.threshold(fgmask, 250, 255, cv2.THRESH_BINARY)
+        # print("Move mean " + str(fgmask.mean()))
         if fgmask.mean() >= MAX_MOVE_MEAN:
             fgmask = np.zeros(fgmask.shape, dtype=np.uint8)
         motion_fgbg.apply(frame)
@@ -110,14 +129,14 @@ while not game.board.is_game_over():
         last_frame = stabilize_background_subtractors()
         if game.register_move(fgmask, previous_frame, frame):
             pass
-            #cv2.imwrite(game.executed_moves[-1] + " frame.jpg", frame)
-            #cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
-            #cv2.imwrite(game.executed_moves[-1] + " background.jpg", previous_frame)
+            # cv2.imwrite(game.executed_moves[-1] + " frame.jpg", frame)
+            # cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
+            # cv2.imwrite(game.executed_moves[-1] + " background.jpg", previous_frame)
         else:
             pass
-            #cv2.imwrite("frame_fail.jpg", frame)
-            #cv2.imwrite("mask_fail.jpg", fgmask)
-            #cv2.imwrite("background_fail.jpg", previous_frame)
+            # cv2.imwrite("frame_fail.jpg", frame)
+            # cv2.imwrite("mask_fail.jpg", fgmask)
+            # cv2.imwrite("background_fail.jpg", previous_frame)
         previous_frame = last_frame
     else:
         move_fgbg.apply(frame)

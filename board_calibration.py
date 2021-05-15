@@ -3,6 +3,20 @@ from math import inf, sqrt
 import pickle
 from helper import rotateMatrix, perspective_transform
 import numpy as np
+import sys
+from tkinter import messagebox
+import tkinter as tk
+
+show_info = False
+for argument in sys.argv:
+    if argument == "show-info":
+        show_info = True
+
+if show_info:
+    root = tk.Tk()
+    root.withdraw()
+    messagebox.showinfo("Board Calibration",
+                        'Board calibration will start. It should detect corners of the chess board almost immediately. If it does not, you should press key "q" to stop board calibration and change webcam/board position.')
 
 
 def mark_corners(frame, augmented_corners, rotation_count):
@@ -20,14 +34,14 @@ def mark_corners(frame, augmented_corners, rotation_count):
                 index = str(i) + "," + str(j)
                 corner = augmented_corners[i][j]
             elif rotation_count == 1:
-                index = str(j) + "," + str(8-i)
-                corner = (height-augmented_corners[i][j][1], augmented_corners[i][j][0])
+                index = str(j) + "," + str(8 - i)
+                corner = (height - augmented_corners[i][j][1], augmented_corners[i][j][0])
             elif rotation_count == 2:
                 index = str(8 - i) + "," + str(8 - j)
                 corner = (width - augmented_corners[i][j][0], height - augmented_corners[i][j][1])
             elif rotation_count == 3:
                 index = str(8 - j) + "," + str(i)
-                corner = (augmented_corners[i][j][1], width-augmented_corners[i][j][0])
+                corner = (augmented_corners[i][j][1], width - augmented_corners[i][j][0])
             corner = (int(corner[0]), int(corner[1]))
             frame = cv2.putText(frame, index, corner, cv2.FONT_HERSHEY_SIMPLEX,
                                 0.5, (255, 0, 0), 1, cv2.LINE_AA)
@@ -52,6 +66,10 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     retval, corners = cv2.findChessboardCorners(gray, patternSize=board_dimensions)
     if retval:
+        if show_info:
+            messagebox.showinfo("Chess Board Detected",
+                                'Please check that corners of your chess board are correctly detected. The square covered by points (0,0), (0,1),(1,0) and (1,1) should be a8. You can rotate the image by pressing key "r" to adjust that. Press key "q" to save detected chess board corners and finish board calibration.')
+            root.destroy()
         if corners[0][0][0] > corners[-1][0][0]:  # corners returned in reverse order
             corners = corners[::-1]
         minX, maxX, minY, maxY = inf, -inf, inf, -inf
@@ -109,13 +127,13 @@ while True:
             row.append((x, y))
 
         augmented_corners.append(row)
-        #print(augmented_corners)
+        # print(augmented_corners)
 
         while augmented_corners[0][0][0] > augmented_corners[8][8][0] or augmented_corners[0][0][1] > \
                 augmented_corners[8][8][1]:
             rotateMatrix(augmented_corners)
 
-        #print(augmented_corners)
+        # print(augmented_corners)
         pts1 = np.float32([list(augmented_corners[0][0]), list(augmented_corners[8][0]), list(augmented_corners[0][8]),
                            list(augmented_corners[8][8])])
 
@@ -129,7 +147,7 @@ while True:
             if response & 0xFF == ord('r'):
                 rotation_count += 1
                 rotation_count %= 4
-            else:
+            elif response & 0xFF == ord('q'):
                 break
         break
 
@@ -163,7 +181,7 @@ else:
 
 print("Side view compensation" + str(side_view_compensation))
 print("Rotation count " + str(rotation_count))
-print("Constants " + str(augmented_corners))
+#print("Constants " + str(augmented_corners))
 filename = 'constants.bin'
 outfile = open(filename, 'wb')
 pickle.dump([augmented_corners, side_view_compensation, rotation_count], outfile)

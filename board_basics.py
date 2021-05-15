@@ -58,11 +58,9 @@ class Board_basics:
 
                 ssim = structural_similarity(next_board[row][column],
                                              previous_board[row][column], multichannel=True)
-
-                #print(ssim)
-                if ssim > 0.75:
+                #print(ssim, self.convert_row_column_to_square_name(row, column))
+                if ssim > 0.8:
                     continue
-
                 potential_squares.append((score, row, column))
 
         potential_squares.sort(reverse=True)
