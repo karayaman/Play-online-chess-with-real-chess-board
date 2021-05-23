@@ -38,6 +38,12 @@ You can run "gui.py" to open the GUI. You can use it to do the steps in Setup an
 
 ![](https://github.com/karayaman/Play-online-chess-with-real-chess-board/blob/main/gui.JPG?raw=true)
 
+## Video
+
+In this section you can find video content related to the software.
+
+[Game against Stockfish 5 2000 ELO](https://youtu.be/6KV4kHBKh3w)
+
 ## Frequently Asked Questions
 
 ### What is the program doing? How it works? 
@@ -75,4 +81,4 @@ It should detect corners of the chess board almost immediately. Please do not sp
 - mss
 - numpy
 - pyttsx3
-- skimage
+- scikit-image
