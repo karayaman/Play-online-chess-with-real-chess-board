@@ -44,6 +44,8 @@ In this section you can find video content related to the software.
 
 [Game against Stockfish 5 2000 ELO](https://youtu.be/6KV4kHBKh3w)
 
+[Test game on chess.com](https://youtu.be/Z3-hE0JbJf0)
+
 ## Frequently Asked Questions
 
 ### What is the program doing? How it works? 
