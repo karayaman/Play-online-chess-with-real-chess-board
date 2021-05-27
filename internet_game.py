@@ -4,7 +4,8 @@ import time
 
 
 class Internet_game:
-    def __init__(self, use_template, start_delay):
+    def __init__(self, use_template, start_delay, drag_drop):
+        self.drag_drop = drag_drop
         time.sleep(start_delay)
         if use_template:
             self.position, self.we_play_white = chessboard_detection.find_chessboard()
@@ -22,8 +23,14 @@ class Internet_game:
         centerXOrigin, centerYOrigin = self.get_square_center(origin_square)
         centerXDest, centerYDest = self.get_square_center(destination_square)
 
-        pyautogui.click(centerXOrigin, centerYOrigin, duration=0.1)
-        pyautogui.click(centerXDest, centerYDest, duration=0.1)
+        if self.drag_drop:
+            pyautogui.moveTo(centerXOrigin, centerYOrigin, 0.01)
+            pyautogui.dragTo(centerXOrigin, centerYOrigin + 1, button='left',
+                             duration=0.01)
+            pyautogui.dragTo(centerXDest, centerYDest, button='left', duration=0.3)
+        else:
+            pyautogui.click(centerXOrigin, centerYOrigin, duration=0.1)
+            pyautogui.click(centerXDest, centerYDest, duration=0.1)
 
         print("Done playing move", origin_square, destination_square)
         return

@@ -49,7 +49,22 @@ def mark_corners(frame, augmented_corners, rotation_count):
     return frame
 
 
-cap = cv2.VideoCapture(0)
+apis = [cv2.CAP_ANY, cv2.CAP_MSMF, cv2.CAP_DSHOW, cv2.CAP_OPENCV_MJPEG, cv2.CAP_FFMPEG]
+api_names = ["Default", "MSMF", "DSHOW", "MJPEG", "FFMPEG"]
+cap = None
+cap_api = None
+cap_found = False
+for api, name in zip(apis, api_names):
+    print(name)
+    cap = cv2.VideoCapture(0, api)
+    cap_api = api
+    if cap.isOpened():
+        cap_found = True
+        break
+    cap.release()
+if not cap_found:
+    print("Couldn't open your webcam. Please check your webcam connection.")
+    sys.exit(0)
 board_dimensions = (7, 7)
 
 for _ in range(10):
@@ -127,13 +142,11 @@ while True:
             row.append((x, y))
 
         augmented_corners.append(row)
-        # print(augmented_corners)
 
         while augmented_corners[0][0][0] > augmented_corners[8][8][0] or augmented_corners[0][0][1] > \
                 augmented_corners[8][8][1]:
             rotateMatrix(augmented_corners)
 
-        # print(augmented_corners)
         pts1 = np.float32([list(augmented_corners[0][0]), list(augmented_corners[8][0]), list(augmented_corners[0][8]),
                            list(augmented_corners[8][8])])
 
@@ -181,8 +194,7 @@ else:
 
 print("Side view compensation" + str(side_view_compensation))
 print("Rotation count " + str(rotation_count))
-#print("Constants " + str(augmented_corners))
 filename = 'constants.bin'
 outfile = open(filename, 'wb')
-pickle.dump([augmented_corners, side_view_compensation, rotation_count], outfile)
+pickle.dump([augmented_corners, side_view_compensation, rotation_count, cap_api], outfile)
 outfile.close()

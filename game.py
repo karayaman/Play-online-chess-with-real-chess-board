@@ -6,8 +6,8 @@ from commentator import Commentator_thread
 
 class Game:
     def __init__(self, board_basics, speech_thread, use_template, make_opponent, start_delay, comment_me,
-                 comment_opponent):
-        self.internet_game = Internet_game(use_template, start_delay)
+                 comment_opponent, drag_drop):
+        self.internet_game = Internet_game(use_template, start_delay, drag_drop)
         self.make_opponent = make_opponent
         self.board_basics = board_basics
         self.speech_thread = speech_thread
@@ -17,7 +17,8 @@ class Game:
         self.comment_opponent = comment_opponent
 
     def register_move(self, fgmask, previous_frame, next_frame):
-        potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask, previous_frame, next_frame)
+        potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask, previous_frame, next_frame,
+                                                                                   self.board)
         success, valid_move_string1 = self.get_valid_move(potential_squares, potential_moves)
         print("Valid move string 1:" + valid_move_string1)
         if not success:
