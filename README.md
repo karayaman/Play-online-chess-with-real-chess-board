@@ -46,6 +46,8 @@ In this section you can find video content related to the software.
 
 [Test game on chess.com](https://youtu.be/Z3-hE0JbJf0)
 
+[Test game on Lichess against Alper Karayaman](https://youtu.be/rz-2QRwYVNY)
+
 ## Frequently Asked Questions
 
 ### What is the program doing? How it works? 
