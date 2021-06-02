@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import pickle
 from game import Game
@@ -15,6 +17,8 @@ drag_drop = False
 comment_me = False
 comment_opponent = False
 start_delay = 5  # seconds
+cap_index = 0
+cap_api = cv2.CAP_ANY
 for argument in sys.argv:
     if argument == "no-template":
         use_template = False
@@ -28,6 +32,9 @@ for argument in sys.argv:
         start_delay = int("".join(c for c in argument if c.isdigit()))
     elif argument == "drag":
         drag_drop = True
+    elif argument.startswith("cap="):
+        cap_index = int("".join(c for c in argument if c.isdigit()))
+        cap_api = cv2.CAP_DSHOW
 MOTION_START_THRESHOLD = 1.0
 HISTORY = 100
 MAX_MOVE_MEAN = 50
@@ -38,7 +45,7 @@ motion_fgbg = cv2.createBackgroundSubtractorKNN(history=HISTORY)
 
 filename = 'constants.bin'
 infile = open(filename, 'rb')
-corners, side_view_compensation, rotation_count, cap_api = pickle.load(infile)
+corners, side_view_compensation, rotation_count = pickle.load(infile)
 infile.close()
 
 board_basics = Board_basics(side_view_compensation, rotation_count)
@@ -52,7 +59,7 @@ game = Game(board_basics, speech_thread, use_template, make_opponent, start_dela
 
 video_capture_thread = Video_capture_thread()
 video_capture_thread.daemon = True
-video_capture_thread.capture = cv2.VideoCapture(0, cap_api)
+video_capture_thread.capture = cv2.VideoCapture(cap_index, cap_api)
 video_capture_thread.start()
 
 pts1 = np.float32([list(corners[0][0]), list(corners[8][0]), list(corners[0][8]),
@@ -138,17 +145,18 @@ while not game.board.is_game_over():
         previous_frame = previous_frame_queue[0]
         if game.register_move(fgmask, previous_frame, frame):
             pass
-            # cv2.imwrite(game.executed_moves[-1] + " frame.jpg", frame)
-            # cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
-            # cv2.imwrite(game.executed_moves[-1] + " background.jpg", previous_frame)
+            #cv2.imwrite(game.executed_moves[-1] + " frame.jpg", frame)
+            #cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
+            #cv2.imwrite(game.executed_moves[-1] + " background.jpg", previous_frame)
         else:
             pass
-            # cv2.imwrite("frame_fail.jpg", frame)
-            # cv2.imwrite("mask_fail.jpg", fgmask)
-            # cv2.imwrite("background_fail.jpg", previous_frame)
+            #cv2.imwrite("frame_fail.jpg", frame)
+            #cv2.imwrite("mask_fail.jpg", fgmask)
+            #cv2.imwrite("background_fail.jpg", previous_frame)
         previous_frame_queue = deque(maxlen=10)
         previous_frame_queue.append(last_frame)
     else:
         move_fgbg.apply(frame)
         previous_frame_queue.append(frame)
 cv2.destroyAllWindows()
+time.sleep(2)

@@ -32,8 +32,12 @@ class Commentator_thread(Thread):
                 self.speech_thread.put_text(self.comment(move))
 
     def comment(self, move):
+        check = ""
+        if self.game_state.board.is_checkmate():
+            check = " checkmate"
+        elif self.game_state.board.is_check():
+            check = " check"
         self.game_state.board.pop()
-        check = " check" if self.game_state.board.gives_check(move) else ""
         if self.game_state.board.is_kingside_castling(move):
             self.game_state.board.push(move)
             return "castling short" + check
@@ -100,7 +104,7 @@ class Game_state:
         minY = int(row * width / 8)
         maxY = int((row + 1) * width / 8)
         square = board_img[minY:maxY, minX:maxX]
-        square_without_borders = square[3:-3, 3:-3]
+        square_without_borders = square[6:-6, 6:-6]
         return square_without_borders
 
     def is_square_empty(self, square):  # A square is empty if its pixels have no variations
@@ -128,6 +132,11 @@ class Game_state:
 
             if self.is_square_empty(squareImage) != shouldBeEmpty:
                 self.board.pop()
+                # print("Problem with : ", self.board.uci(move), " the square ",
+                #      self.convert_row_column_to_square_name(row, column, self.we_play_white), "should ",
+                #      'be empty' if shouldBeEmpty else 'contain a piece',
+                #      " standard deviation is " + str(squareImage.std()))
+                # cv2.imwrite("error.JPG", squareImage)
                 return False
         self.board.pop()
         return True
@@ -143,7 +152,6 @@ class Game_state:
             if pre_to in potential_arrivals:
                 potential_arrivals = potential_arrivals[potential_arrivals != pre_to]
             potential_arrivals = np.append(potential_arrivals, pre_to)
-
         valid_move_string = ""
         for start in potential_starts:
             if valid_move_string:
@@ -197,7 +205,6 @@ class Game_state:
                 "d8" in potential_arrivals):
             if self.board.peek() != chess.Move.from_uci("e8c8"):
                 valid_move_string = "e8c8"
-
         return valid_move_string
 
     def has_square_image_changed(self, old_square,

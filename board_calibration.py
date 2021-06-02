@@ -8,9 +8,14 @@ from tkinter import messagebox
 import tkinter as tk
 
 show_info = False
+cap_index = 0
+cap_api = cv2.CAP_ANY
 for argument in sys.argv:
     if argument == "show-info":
         show_info = True
+    elif argument.startswith("cap="):
+        cap_index = int("".join(c for c in argument if c.isdigit()))
+        cap_api = cv2.CAP_DSHOW
 
 if show_info:
     root = tk.Tk()
@@ -49,20 +54,8 @@ def mark_corners(frame, augmented_corners, rotation_count):
     return frame
 
 
-apis = [cv2.CAP_ANY, cv2.CAP_MSMF, cv2.CAP_DSHOW, cv2.CAP_OPENCV_MJPEG, cv2.CAP_FFMPEG]
-api_names = ["Default", "MSMF", "DSHOW", "MJPEG", "FFMPEG"]
-cap = None
-cap_api = None
-cap_found = False
-for api, name in zip(apis, api_names):
-    print(name)
-    cap = cv2.VideoCapture(0, api)
-    cap_api = api
-    if cap.isOpened():
-        cap_found = True
-        break
-    cap.release()
-if not cap_found:
+cap = cv2.VideoCapture(cap_index, cap_api)
+if not cap.isOpened():
     print("Couldn't open your webcam. Please check your webcam connection.")
     sys.exit(0)
 board_dimensions = (7, 7)
@@ -196,5 +189,5 @@ print("Side view compensation" + str(side_view_compensation))
 print("Rotation count " + str(rotation_count))
 filename = 'constants.bin'
 outfile = open(filename, 'wb')
-pickle.dump([augmented_corners, side_view_compensation, rotation_count, cap_api], outfile)
+pickle.dump([augmented_corners, side_view_compensation, rotation_count], outfile)
 outfile.close()
