@@ -16,6 +16,7 @@ class Commentator_thread(Thread):
         self.game_state = Game_state()
         self.comment_me = None
         self.comment_opponent = None
+        self.language = None
 
     def run(self):
         resized_chessboard = self.game_state.get_chessboard()
@@ -23,56 +24,13 @@ class Commentator_thread(Thread):
         self.game_state.register_move(self.first_move_uci, resized_chessboard)
         if (self.game_state.we_play_white and self.comment_me) or (
                 self.game_state.we_play_white == False and self.comment_opponent):
-            self.speech_thread.put_text(self.comment(self.first_move_uci))
+            self.speech_thread.put_text(self.language.comment(self.game_state.board, self.first_move_uci))
 
         while not self.game_state.board.is_game_over():
             is_my_turn = (self.game_state.we_play_white) == (self.game_state.board.turn == chess.WHITE)
             found_move, move = self.game_state.register_move_if_needed()
             if found_move and ((self.comment_me and is_my_turn) or (self.comment_opponent and (not is_my_turn))):
-                self.speech_thread.put_text(self.comment(move))
-
-    def comment(self, move):
-        check = ""
-        if self.game_state.board.is_checkmate():
-            check = " checkmate"
-        elif self.game_state.board.is_check():
-            check = " check"
-        self.game_state.board.pop()
-        if self.game_state.board.is_kingside_castling(move):
-            self.game_state.board.push(move)
-            return "castling short" + check
-        if self.game_state.board.is_queenside_castling(move):
-            self.game_state.board.push(move)
-            return "castling long" + check
-
-        piece = self.game_state.board.piece_at(move.from_square)
-        from_square = chess.square_name(move.from_square)
-        to_square = chess.square_name(move.to_square)
-        promotion = move.promotion
-
-        is_capture = self.game_state.board.is_capture(move)
-        self.game_state.board.push(move)
-        comment = ""
-        if piece.piece_type == chess.PAWN:
-            comment += "pawn"
-        elif piece.piece_type == chess.KNIGHT:
-            comment += "knight"
-        elif piece.piece_type == chess.BISHOP:
-            comment += "bishop"
-        elif piece.piece_type == chess.ROOK:
-            comment += "rook"
-        elif piece.piece_type == chess.QUEEN:
-            comment += "queen"
-        elif piece.piece_type == chess.KING:
-            comment += "king"
-
-        comment += " " + from_square
-        comment += " takes" if is_capture else " to"
-        comment += " " + to_square
-        if promotion:
-            comment += " promotion to queen"
-        comment += check
-        return comment
+                self.speech_thread.put_text(self.language.comment(self.game_state.board, move))
 
 
 # https://github.com/Stanou01260/chessbot_python/blob/master/code/game_state_classes.py
@@ -184,25 +142,25 @@ class Game_state:
 
         # Detect castling king side with white
         if ("e1" in potential_starts) and ("h1" in potential_starts) and ("f1" in potential_arrivals) and (
-                "g1" in potential_arrivals):
+                "g1" in potential_arrivals) and (chess.Move.from_uci("e1g1") in self.board.legal_moves):
             if self.board.peek() != chess.Move.from_uci("e1g1"):
                 valid_move_string = "e1g1"
 
         # Detect castling queen side with white
         if ("e1" in potential_starts) and ("a1" in potential_starts) and ("c1" in potential_arrivals) and (
-                "d1" in potential_arrivals):
+                "d1" in potential_arrivals) and (chess.Move.from_uci("e1c1") in self.board.legal_moves):
             if self.board.peek() != chess.Move.from_uci("e1c1"):
                 valid_move_string = "e1c1"
 
         # Detect castling king side with black
         if ("e8" in potential_starts) and ("h8" in potential_starts) and ("f8" in potential_arrivals) and (
-                "g8" in potential_arrivals):
+                "g8" in potential_arrivals) and (chess.Move.from_uci("e8g8") in self.board.legal_moves):
             if self.board.peek() != chess.Move.from_uci("e8g8"):
                 valid_move_string = "e8g8"
 
         # Detect castling queen side with black
         if ("e8" in potential_starts) and ("a8" in potential_starts) and ("c8" in potential_arrivals) and (
-                "d8" in potential_arrivals):
+                "d8" in potential_arrivals) and (chess.Move.from_uci("e8c8") in self.board.legal_moves):
             if self.board.peek() != chess.Move.from_uci("e8c8"):
                 valid_move_string = "e8c8"
         return valid_move_string

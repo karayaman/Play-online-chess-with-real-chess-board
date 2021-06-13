@@ -67,10 +67,24 @@ def start_game(ignore=None):
     if drag_drop.get():
         arguments.append("drag")
     arguments.append("delay=" + str(values.index(default_value.get())))
+
     selected_camera = camera.get()
     if selected_camera != OPTIONS[0]:
         cap_index = OPTIONS.index(selected_camera) - 1
         arguments.append("cap=" + str(cap_index))
+
+    selected_voice = voice.get()
+    if selected_voice != VOICE_OPTIONS[0]:
+        voice_index = VOICE_OPTIONS.index(selected_voice) - 1
+        arguments.append("voice=" + str(voice_index))
+        language = "English"
+        languages = ["English", "German", "Russian", "Turkish"]
+        for l in languages:
+            if l in selected_voice:
+                language = l
+                break
+        arguments.append("lang=" + language)
+
     process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     global running_process
     running_process = process
@@ -104,35 +118,54 @@ menu = tk.OptionMenu(menu_frame, camera, *OPTIONS)
 menu.config(width=max(len(option) for option in OPTIONS), anchor="w")
 menu.grid(column=1, row=0, sticky=tk.W)
 
+voice_frame = tk.Frame(window)
+voice_frame.grid(row=1, column=0, columnspan=2, sticky="W")
+voice = tk.StringVar()
+VOICE_OPTIONS = ["Default"]
+try:
+    import pyttsx3
+
+    engine = pyttsx3.init()
+    for v in engine.getProperty('voices'):
+        VOICE_OPTIONS.append(v.name)
+except:
+    pass
+voice.set(VOICE_OPTIONS[0])
+voice_label = tk.Label(voice_frame, text='Voice preference:')
+voice_label.grid(column=0, row=0, sticky=tk.W)
+voice_menu = tk.OptionMenu(voice_frame, voice, *VOICE_OPTIONS)
+voice_menu.config(width=max(len(option) for option in VOICE_OPTIONS), anchor="w")
+voice_menu.grid(column=1, row=0, sticky=tk.W)
+
 c = tk.Checkbutton(window, text="Find chess board of online game without template images.", variable=no_template)
-c.grid(row=1, column=0, sticky="W", columnspan=1)
+c.grid(row=2, column=0, sticky="W", columnspan=1)
 
 c1 = tk.Checkbutton(window, text="Make moves of opponent too.", variable=make_opponent)
-c1.grid(row=2, column=0, sticky="W", columnspan=1)
+c1.grid(row=3, column=0, sticky="W", columnspan=1)
 
 c2 = tk.Checkbutton(window, text="Make moves by drag and drop.", variable=drag_drop)
-c2.grid(row=3, column=0, sticky="W", columnspan=1)
-
-c2 = tk.Checkbutton(window, text="Say my moves.", variable=comment_me)
 c2.grid(row=4, column=0, sticky="W", columnspan=1)
 
+c2 = tk.Checkbutton(window, text="Say my moves.", variable=comment_me)
+c2.grid(row=5, column=0, sticky="W", columnspan=1)
+
 c3 = tk.Checkbutton(window, text="Say opponent's moves.", variable=comment_opponent)
-c3.grid(row=5, column=0, sticky="W", columnspan=1)
+c3.grid(row=6, column=0, sticky="W", columnspan=1)
 
 values = ["Do not delay game start.", "1 second delayed game start."] + [str(i) + " seconds delayed game start." for i
                                                                          in range(2, 6)]
 default_value = tk.StringVar()
 s = tk.Spinbox(window, values=values, textvariable=default_value, width=max(len(value) for value in values))
 default_value.set(values[-1])
-s.grid(row=6, column=0, sticky="W", columnspan=2)
+s.grid(row=7, column=0, sticky="W", columnspan=2)
 button_frame = tk.Frame(window)
-button_frame.grid(row=7, column=0, columnspan=2, sticky="W")
+button_frame.grid(row=8, column=0, columnspan=2, sticky="W")
 start = tk.Button(button_frame, text="Start Game", command=start_game)
 start.grid(row=0, column=0)
 board = tk.Button(button_frame, text="Board Calibration", command=board_calibration)
 board.grid(row=0, column=1)
 text_frame = tk.Frame(window)
-text_frame.grid(row=8, column=0)
+text_frame.grid(row=9, column=0)
 scroll_bar = tk.Scrollbar(text_frame)
 logs_text = tk.Text(text_frame, background='gray', yscrollcommand=scroll_bar.set)
 scroll_bar.config(command=logs_text.yview)

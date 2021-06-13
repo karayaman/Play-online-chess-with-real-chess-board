@@ -4,13 +4,10 @@ import numpy as np
 
 # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_geometric_transformations/py_geometric_transformations.html
 def perspective_transform(image, pts1):
-    height, width = image.shape[:2]
-    min_dimension = min(height, width)
-    if (min_dimension % 8) != 0:
-        min_dimension = 480
-    pts2 = np.float32([[0, 0], [0, min_dimension], [min_dimension, 0], [min_dimension, min_dimension]])
+    dimension = 480
+    pts2 = np.float32([[0, 0], [0, dimension], [dimension, 0], [dimension, dimension]])
     M = cv2.getPerspectiveTransform(pts1, pts2)
-    dst = cv2.warpPerspective(image, M, (min_dimension, min_dimension))
+    dst = cv2.warpPerspective(image, M, (dimension, dimension))
     return dst
 
 

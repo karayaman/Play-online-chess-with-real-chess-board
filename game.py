@@ -6,7 +6,7 @@ from commentator import Commentator_thread
 
 class Game:
     def __init__(self, board_basics, speech_thread, use_template, make_opponent, start_delay, comment_me,
-                 comment_opponent, drag_drop):
+                 comment_opponent, drag_drop, language):
         self.internet_game = Internet_game(use_template, start_delay, drag_drop)
         self.make_opponent = make_opponent
         self.board_basics = board_basics
@@ -15,6 +15,7 @@ class Game:
         self.board = chess.Board()
         self.comment_me = comment_me
         self.comment_opponent = comment_opponent
+        self.language = language
 
     def register_move(self, fgmask, previous_frame, next_frame):
         potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask, previous_frame, next_frame,
@@ -22,7 +23,7 @@ class Game:
         success, valid_move_string1 = self.get_valid_move(potential_squares, potential_moves)
         print("Valid move string 1:" + valid_move_string1)
         if not success:
-            self.speech_thread.put_text("Move registration failed. Please redo your move.")
+            self.speech_thread.put_text(self.language.move_failed)
             return False
 
         valid_move_UCI = chess.Move.from_uci(valid_move_string1)
@@ -34,7 +35,7 @@ class Game:
         if self.internet_game.is_our_turn or self.make_opponent:
             self.internet_game.move(valid_move_UCI)
         else:
-            self.speech_thread.put_text(valid_move_string1)
+            self.speech_thread.put_text(valid_move_string1[:4])
 
         self.internet_game.is_our_turn = not self.internet_game.is_our_turn
         if len(self.executed_moves) == 1 and (self.comment_me or self.comment_opponent):
@@ -46,6 +47,7 @@ class Game:
             commentator_thread.game_state.board_position_on_screen = self.internet_game.position
             commentator_thread.comment_me = self.comment_me
             commentator_thread.comment_opponent = self.comment_opponent
+            commentator_thread.language = self.language
             commentator_thread.start()
         return True
 

@@ -56,6 +56,9 @@ class Board_basics:
         self.SSIM_THRESHOLD_LIGHT_BLACK = min(self.SSIM_THRESHOLD_LIGHT_BLACK, ssim_light_black + 0.2)
         self.SSIM_THRESHOLD_DARK_WHITE = min(self.SSIM_THRESHOLD_DARK_WHITE, ssim_dark_white + 0.2)
         self.SSIM_THRESHOLD_DARK_BLACK = min(self.SSIM_THRESHOLD_DARK_BLACK, ssim_dark_black + 0.2)
+        self.SSIM_THRESHOLD = max(
+            [self.SSIM_THRESHOLD, self.SSIM_THRESHOLD_LIGHT_WHITE, self.SSIM_THRESHOLD_LIGHT_BLACK,
+             self.SSIM_THRESHOLD_DARK_WHITE, self.SSIM_THRESHOLD_DARK_BLACK])
         print(self.SSIM_THRESHOLD_LIGHT_WHITE, self.SSIM_THRESHOLD_LIGHT_BLACK, self.SSIM_THRESHOLD_DARK_WHITE,
               self.SSIM_THRESHOLD_DARK_BLACK)
         self.ssim_table = [[self.SSIM_THRESHOLD_DARK_BLACK, self.SSIM_THRESHOLD_DARK_WHITE],
@@ -139,6 +142,11 @@ class Board_basics:
                 potential_squares.append((score, row, column, ssim))
 
         potential_squares.sort(reverse=True)
+        potential_squares_castling = []
+        for i in range(min(6, len(potential_squares))):
+            score, row, column, ssim = potential_squares[i]
+            potential_square = (score, self.convert_row_column_to_square_name(row, column))
+            potential_squares_castling.append(potential_square)
         potential_squares = potential_squares[:4]
         potential_moves = []
 
@@ -175,8 +183,4 @@ class Board_basics:
 
         potential_moves.sort(reverse=True)
 
-        for i in range(len(potential_squares)):
-            score, row, column, ssim = potential_squares[i]
-            potential_squares[i] = (score, self.convert_row_column_to_square_name(row, column))
-
-        return potential_squares, potential_moves
+        return potential_squares_castling, potential_moves

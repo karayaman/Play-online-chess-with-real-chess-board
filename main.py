@@ -1,15 +1,16 @@
 import time
-
 import cv2
 import pickle
+import numpy as np
+import sys
+from collections import deque
+
 from game import Game
 from board_basics import Board_basics
-import numpy as np
 from helper import perspective_transform
 from speech import Speech_thread
 from videocapture import Video_capture_thread
-import sys
-from collections import deque
+from languages import *
 
 use_template = True
 make_opponent = False
@@ -19,6 +20,8 @@ comment_opponent = False
 start_delay = 5  # seconds
 cap_index = 0
 cap_api = cv2.CAP_ANY
+voice_index = 0
+language = English()
 for argument in sys.argv:
     if argument == "no-template":
         use_template = False
@@ -35,6 +38,15 @@ for argument in sys.argv:
     elif argument.startswith("cap="):
         cap_index = int("".join(c for c in argument if c.isdigit()))
         cap_api = cv2.CAP_DSHOW
+    elif argument.startswith("voice="):
+        voice_index = int("".join(c for c in argument if c.isdigit()))
+    elif argument.startswith("lang="):
+        if "German" in argument:
+            language = German()
+        elif "Russian" in argument:
+            language = Russian()
+        elif "Turkish" in argument:
+            language = Turkish()
 MOTION_START_THRESHOLD = 1.0
 HISTORY = 100
 MAX_MOVE_MEAN = 50
@@ -52,10 +64,11 @@ board_basics = Board_basics(side_view_compensation, rotation_count)
 
 speech_thread = Speech_thread()
 speech_thread.daemon = True
+speech_thread.index = voice_index
 speech_thread.start()
 
 game = Game(board_basics, speech_thread, use_template, make_opponent, start_delay, comment_me, comment_opponent,
-            drag_drop)
+            drag_drop, language)
 
 video_capture_thread = Video_capture_thread()
 video_capture_thread.daemon = True
@@ -118,7 +131,7 @@ previous_frame = stabilize_background_subtractors()
 board_basics.initialize_ssim(previous_frame)
 previous_frame_queue = deque(maxlen=10)
 previous_frame_queue.append(previous_frame)
-speech_thread.put_text("Game started")
+speech_thread.put_text(language.game_started)
 while not game.board.is_game_over():
     sys.stdout.flush()
     frame = video_capture_thread.get_frame()
@@ -143,14 +156,15 @@ while not game.board.is_game_over():
         move_fgbg.apply(frame, learningRate=1.0)
         last_frame = stabilize_background_subtractors()
         previous_frame = previous_frame_queue[0]
-        if game.register_move(fgmask, previous_frame, frame):
+
+        if game.register_move(fgmask, previous_frame, last_frame):
             pass
-            #cv2.imwrite(game.executed_moves[-1] + " frame.jpg", frame)
+            #cv2.imwrite(game.executed_moves[-1] + " frame.jpg", last_frame)
             #cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
             #cv2.imwrite(game.executed_moves[-1] + " background.jpg", previous_frame)
         else:
             pass
-            #cv2.imwrite("frame_fail.jpg", frame)
+            #cv2.imwrite("frame_fail.jpg", last_frame)
             #cv2.imwrite("mask_fail.jpg", fgmask)
             #cv2.imwrite("background_fail.jpg", previous_frame)
         previous_frame_queue = deque(maxlen=10)
