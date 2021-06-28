@@ -79,7 +79,7 @@ It should detect corners of the chess board almost immediately. Please do not sp
 
 ## Required libraries
 
-- opencv
+- opencv-python
 - python-chess
 - pyautogui
 - mss
