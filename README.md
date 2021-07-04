@@ -86,3 +86,4 @@ It should detect corners of the chess board almost immediately. Please do not sp
 - numpy
 - pyttsx3
 - scikit-image
+- pygrabber
