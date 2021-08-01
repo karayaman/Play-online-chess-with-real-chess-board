@@ -39,13 +39,17 @@ def stop_process(ignore=None):
 
 def board_calibration(ignore=None):
     arguments = [sys.executable, "board_calibration.py", "show-info"]
-    #arguments = ["board_calibration.exe", "show-info"]
+    # arguments = ["board_calibration.exe", "show-info"]
+    # working_directory = sys.argv[0][:-3]
+    # arguments = [working_directory+"board_calibration", "show-info"]
     selected_camera = camera.get()
     if selected_camera != OPTIONS[0]:
         cap_index = OPTIONS.index(selected_camera) - 1
         arguments.append("cap=" + str(cap_index))
     process = subprocess.Popen(arguments, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT)
+    # process = subprocess.Popen(arguments, stdout=subprocess.PIPE,
+    #                           stderr=subprocess.STDOUT, cwd=working_directory)
     global running_process
     running_process = process
     log_thread = Thread(target=log_process, args=(process, "Board calibration finished.\n"))
@@ -55,7 +59,9 @@ def board_calibration(ignore=None):
 
 def start_game(ignore=None):
     arguments = [sys.executable, "main.py"]
-    #arguments = ["main.exe"]
+    # arguments = ["main.exe"]
+    # working_directory = sys.argv[0][:-3]
+    # arguments = [working_directory+"main"]
     if no_template.get():
         arguments.append("no-template")
     if make_opponent.get():
@@ -79,13 +85,15 @@ def start_game(ignore=None):
         arguments.append("voice=" + str(voice_index))
         language = "English"
         languages = ["English", "German", "Russian", "Turkish"]
-        for l in languages:
-            if l in selected_voice:
+        codes = ["en_", "de_", "ru_", "tr_"]
+        for l, c in zip(languages, codes):
+            if (l in selected_voice) or (l.lower() in selected_voice) or (c in selected_voice):
                 language = l
                 break
         arguments.append("lang=" + language)
 
     process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=working_directory)
     global running_process
     running_process = process
     log_thread = Thread(target=log_process, args=(process, "Game finished.\n"))
@@ -106,9 +114,25 @@ menu_frame.grid(row=0, column=0, columnspan=2, sticky="W")
 camera = tk.StringVar()
 OPTIONS = ["Default"]
 try:
-    from pygrabber.dshow_graph import FilterGraph
+    import platform
 
-    OPTIONS.extend(FilterGraph().get_input_devices())
+    platform_name = platform.system()
+    if platform_name == "Darwin":
+        cmd = 'system_profiler SPCameraDataType | grep "^    [^ ]" | sed "s/    //" | sed "s/://"'
+        result = subprocess.check_output(cmd, shell=True)
+        result = result.decode()
+        result = [r for r in result.split("\n") if r]
+        OPTIONS.extend(result)
+    elif platform_name == "Linux":
+        cmd = 'for I in /sys/class/video4linux/*; do cat $I/name; done'
+        result = subprocess.check_output(cmd, shell=True)
+        result = result.decode()
+        result = [r for r in result.split("\n") if r]
+        OPTIONS.extend(result)
+    else:
+        from pygrabber.dshow_graph import FilterGraph
+
+        OPTIONS.extend(FilterGraph().get_input_devices())
 except:
     pass
 camera.set(OPTIONS[0])
@@ -123,11 +147,19 @@ voice_frame.grid(row=1, column=0, columnspan=2, sticky="W")
 voice = tk.StringVar()
 VOICE_OPTIONS = ["Default"]
 try:
-    import pyttsx3
+    import platform
 
-    engine = pyttsx3.init()
-    for v in engine.getProperty('voices'):
-        VOICE_OPTIONS.append(v.name)
+    if platform.system() == "Darwin":
+        import mac_say
+
+        for v in mac_say.voices():
+            VOICE_OPTIONS.append(v[0] + " " + v[1])
+    else:
+        import pyttsx3
+
+        engine = pyttsx3.init()
+        for v in engine.getProperty('voices'):
+            VOICE_OPTIONS.append(v.name)
 except:
     pass
 voice.set(VOICE_OPTIONS[0])

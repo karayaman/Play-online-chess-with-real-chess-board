@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 import sys
 from collections import deque
+import platform
 
 from game import Game
 from board_basics import Board_basics
@@ -37,7 +38,13 @@ for argument in sys.argv:
         drag_drop = True
     elif argument.startswith("cap="):
         cap_index = int("".join(c for c in argument if c.isdigit()))
-        cap_api = cv2.CAP_DSHOW
+        platform_name = platform.system()
+        if platform_name == "Darwin":
+            cap_api = cv2.CAP_AVFOUNDATION
+        elif platform_name == "Linux":
+            cap_api = cv2.CAP_V4L2
+        else:
+            cap_api = cv2.CAP_DSHOW
     elif argument.startswith("voice="):
         voice_index = int("".join(c for c in argument if c.isdigit()))
     elif argument.startswith("lang="):
@@ -132,6 +139,7 @@ board_basics.initialize_ssim(previous_frame)
 previous_frame_queue = deque(maxlen=10)
 previous_frame_queue.append(previous_frame)
 speech_thread.put_text(language.game_started)
+game.commentator.start()
 while not game.board.is_game_over():
     sys.stdout.flush()
     frame = video_capture_thread.get_frame()
@@ -159,14 +167,16 @@ while not game.board.is_game_over():
 
         if game.register_move(fgmask, previous_frame, last_frame):
             pass
-            #cv2.imwrite(game.executed_moves[-1] + " frame.jpg", last_frame)
-            #cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
-            #cv2.imwrite(game.executed_moves[-1] + " background.jpg", previous_frame)
+            # cv2.imwrite(game.executed_moves[-1] + " frame.jpg", last_frame)
+            # cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
+            # cv2.imwrite(game.executed_moves[-1] + " background.jpg", previous_frame)
         else:
             pass
-            #cv2.imwrite("frame_fail.jpg", last_frame)
-            #cv2.imwrite("mask_fail.jpg", fgmask)
-            #cv2.imwrite("background_fail.jpg", previous_frame)
+            # import uuid
+            # id = str(uuid.uuid1())
+            # cv2.imwrite(id+"frame_fail.jpg", last_frame)
+            # cv2.imwrite(id+"mask_fail.jpg", fgmask)
+            # cv2.imwrite(id+"background_fail.jpg", previous_frame)
         previous_frame_queue = deque(maxlen=10)
         previous_frame_queue.append(last_frame)
     else:

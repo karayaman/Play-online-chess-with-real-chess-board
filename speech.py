@@ -1,6 +1,6 @@
 from threading import Thread
 from queue import Queue
-import pyttsx3
+import platform
 
 
 class Speech_thread(Thread):
@@ -11,14 +11,22 @@ class Speech_thread(Thread):
         self.index = None
 
     def run(self):
-        while True:
-            engine = pyttsx3.init()
-            voices = engine.getProperty('voices')
-            voice = voices[self.index]
-            engine.setProperty('voice', voice.id)
-            text = self.queue.get()
-            engine.say(text)
-            engine.runAndWait()
+        if platform.system() == "Darwin":
+            import mac_say
+            name = mac_say.voices()[self.index][0]
+            while True:
+                text = self.queue.get()
+                mac_say.say([text, "-v", name])
+        else:
+            import pyttsx3
+            while True:
+                engine = pyttsx3.init()
+                voices = engine.getProperty('voices')
+                voice = voices[self.index]
+                engine.setProperty('voice', voice.id)
+                text = self.queue.get()
+                engine.say(text)
+                engine.runAndWait()
 
     def put_text(self, text):
         self.queue.put(text)

@@ -13,7 +13,6 @@ class Internet_game:
             self.position, self.we_play_white = chessboard_detection.auto_find_chessboard()
         self.is_our_turn = self.we_play_white
 
-    # https://github.com/Stanou01260/chessbot_python/blob/master/code/game_state_classes.py
     def move(self, move):
         move_string = move.uci()
 

@@ -6,6 +6,20 @@ class English:
         self.game_started = "Game started"
         self.move_failed = "Move registration failed. Please redo your move."
 
+    def name(self, piece_type):
+        if piece_type == chess.PAWN:
+            return "pawn"
+        elif piece_type == chess.KNIGHT:
+            return "knight"
+        elif piece_type == chess.BISHOP:
+            return "bishop"
+        elif piece_type == chess.ROOK:
+            return "rook"
+        elif piece_type == chess.QUEEN:
+            return "queen"
+        elif piece_type == chess.KING:
+            return "king"
+
     def comment(self, board, move):
         check = ""
         if board.is_checkmate():
@@ -28,24 +42,13 @@ class English:
         is_capture = board.is_capture(move)
         board.push(move)
         comment = ""
-        if piece.piece_type == chess.PAWN:
-            comment += "pawn"
-        elif piece.piece_type == chess.KNIGHT:
-            comment += "knight"
-        elif piece.piece_type == chess.BISHOP:
-            comment += "bishop"
-        elif piece.piece_type == chess.ROOK:
-            comment += "rook"
-        elif piece.piece_type == chess.QUEEN:
-            comment += "queen"
-        elif piece.piece_type == chess.KING:
-            comment += "king"
+        comment += self.name(piece.piece_type)
 
         comment += " " + from_square
         comment += " takes" if is_capture else " to"
         comment += " " + to_square
         if promotion:
-            comment += " promotion to queen"
+            comment += " promotion to " + self.name(promotion)
         comment += check
         return comment
 
@@ -54,6 +57,20 @@ class German:
     def __init__(self):
         self.game_started = "Das Spiel hat gestartet."
         self.move_failed = "Der Zug ist ungültig, bitte wiederholen."
+
+    def name(self, piece_type):
+        if piece_type == chess.PAWN:
+            return "Bauer"
+        elif piece_type == chess.KNIGHT:
+            return "Springer"
+        elif piece_type == chess.BISHOP:
+            return "Läufer"
+        elif piece_type == chess.ROOK:
+            return "Turm"
+        elif piece_type == chess.QUEEN:
+            return "Dame"
+        elif piece_type == chess.KING:
+            return "König"
 
     def comment(self, board, move):
         check = ""
@@ -77,24 +94,13 @@ class German:
         is_capture = board.is_capture(move)
         board.push(move)
         comment = ""
-        if piece.piece_type == chess.PAWN:
-            comment += "Bauer"
-        elif piece.piece_type == chess.KNIGHT:
-            comment += "Springer"
-        elif piece.piece_type == chess.BISHOP:
-            comment += "Läufer"
-        elif piece.piece_type == chess.ROOK:
-            comment += "Turm"
-        elif piece.piece_type == chess.QUEEN:
-            comment += "Dame"
-        elif piece.piece_type == chess.KING:
-            comment += "König"
+        comment += self.name(piece.piece_type)
 
         comment += " " + from_square
         comment += " schlägt" if is_capture else " nach"
         comment += " " + to_square
         if promotion:
-            comment += " Umwandlung in Dame"
+            comment += " Umwandlung in " + self.name(promotion)
         comment += check
         return comment
 
@@ -103,6 +109,20 @@ class Russian:
     def __init__(self):
         self.game_started = "игра началась"
         self.move_failed = "Ошибка регистрации хода. Пожалуйста, повторите свой ход"
+
+    def name(self, piece_type):
+        if piece_type == chess.PAWN:
+            return "пешка"
+        elif piece_type == chess.KNIGHT:
+            return "конь"
+        elif piece_type == chess.BISHOP:
+            return "слон"
+        elif piece_type == chess.ROOK:
+            return "ладья"
+        elif piece_type == chess.QUEEN:
+            return "ферзь"
+        elif piece_type == chess.KING:
+            return "король"
 
     def comment(self, board, move):
         check = ""
@@ -126,24 +146,13 @@ class Russian:
         is_capture = board.is_capture(move)
         board.push(move)
         comment = ""
-        if piece.piece_type == chess.PAWN:
-            comment += "пешка"
-        elif piece.piece_type == chess.KNIGHT:
-            comment += "конь"
-        elif piece.piece_type == chess.BISHOP:
-            comment += "слон"
-        elif piece.piece_type == chess.ROOK:
-            comment += "ладья"
-        elif piece.piece_type == chess.QUEEN:
-            comment += "ферзь"
-        elif piece.piece_type == chess.KING:
-            comment += "король"
+        comment += self.name(piece.piece_type)
 
         comment += " " + from_square
         comment += " бьёт" if is_capture else ""
         comment += " " + to_square
         if promotion:
-            comment += " превращение в ферзя"
+            comment += " превращение в " + self.name(promotion)
         comment += check
         return comment
 
@@ -222,6 +231,15 @@ class Turkish:
             comment += "'" + self.from_suffix(from_square) + " " + to_square + "'" + self.to_suffix(to_square)
 
         if promotion:
-            comment += " vezire terfi"
+            comment += " "
+            if promotion == chess.KNIGHT:
+                comment += "ata"
+            elif promotion == chess.BISHOP:
+                comment += "file"
+            elif promotion == chess.ROOK:
+                comment += "kaleye"
+            elif promotion == chess.QUEEN:
+                comment += "vezire"
+            comment += " terfi"
         comment += check
         return comment

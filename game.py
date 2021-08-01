@@ -1,6 +1,7 @@
+import time
+
 import chess
 from internet_game import Internet_game
-import numpy as np
 from commentator import Commentator_thread
 
 
@@ -12,16 +13,37 @@ class Game:
         self.board_basics = board_basics
         self.speech_thread = speech_thread
         self.executed_moves = []
+        self.played_moves = []
         self.board = chess.Board()
         self.comment_me = comment_me
         self.comment_opponent = comment_opponent
         self.language = language
 
+        commentator_thread = Commentator_thread()
+        commentator_thread.daemon = True
+        commentator_thread.speech_thread = self.speech_thread
+        commentator_thread.game_state.game_thread = self
+        commentator_thread.game_state.we_play_white = self.internet_game.we_play_white
+        commentator_thread.game_state.board_position_on_screen = self.internet_game.position
+        commentator_thread.comment_me = self.comment_me
+        commentator_thread.comment_opponent = self.comment_opponent
+        commentator_thread.language = self.language
+        self.commentator = commentator_thread
+
+    def get_move_to_register(self):
+        if self.commentator:
+            if len(self.executed_moves) < len(self.commentator.game_state.registered_moves):
+                return self.commentator.game_state.registered_moves[len(self.executed_moves)]
+            else:
+                return None
+        else:
+            return None
+
     def register_move(self, fgmask, previous_frame, next_frame):
         potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask, previous_frame, next_frame,
                                                                                    self.board)
         success, valid_move_string1 = self.get_valid_move(potential_squares, potential_moves)
-        print("Valid move string 1:" + valid_move_string1)
+        print("Valid move string:" + valid_move_string1)
         if not success:
             self.speech_thread.put_text(self.language.move_failed)
             return False
@@ -29,39 +51,45 @@ class Game:
         valid_move_UCI = chess.Move.from_uci(valid_move_string1)
 
         print("Move has been registered")
-        self.executed_moves.append(self.board.san(valid_move_UCI))
-        self.board.push(valid_move_UCI)
 
         if self.internet_game.is_our_turn or self.make_opponent:
             self.internet_game.move(valid_move_UCI)
+            self.played_moves.append(valid_move_UCI)
+            while self.commentator:
+                time.sleep(0.1)
+                move_to_register = self.get_move_to_register()
+                if move_to_register:
+                    valid_move_UCI = move_to_register
+                    break
         else:
             self.speech_thread.put_text(valid_move_string1[:4])
+            self.played_moves.append(valid_move_UCI)
+
+        self.executed_moves.append(self.board.san(valid_move_UCI))
+        self.board.push(valid_move_UCI)
 
         self.internet_game.is_our_turn = not self.internet_game.is_our_turn
-        if len(self.executed_moves) == 1 and (self.comment_me or self.comment_opponent):
-            commentator_thread = Commentator_thread()
-            commentator_thread.daemon = True
-            commentator_thread.speech_thread = self.speech_thread
-            commentator_thread.first_move_uci = valid_move_UCI
-            commentator_thread.game_state.we_play_white = self.internet_game.we_play_white
-            commentator_thread.game_state.board_position_on_screen = self.internet_game.position
-            commentator_thread.comment_me = self.comment_me
-            commentator_thread.comment_opponent = self.comment_opponent
-            commentator_thread.language = self.language
-            commentator_thread.start()
         return True
 
-    # https://github.com/Stanou01260/chessbot_python/blob/master/code/game_state_classes.py
     def get_valid_move(self, potential_squares, potential_moves):
         print("Potential squares")
         print(potential_squares)
         print("Potential moves")
         print(potential_moves)
 
+        move_to_register = self.get_move_to_register()
+
         valid_move_string = ""
         for score, start, arrival in potential_moves:
             if valid_move_string:
                 break
+
+            if move_to_register:
+                if chess.square_name(move_to_register.from_square) != start:
+                    continue
+                if chess.square_name(move_to_register.to_square) != arrival:
+                    continue
+
             uci_move = start + arrival
             try:
                 move = chess.Move.from_uci(uci_move)
@@ -72,11 +100,14 @@ class Game:
             if move in self.board.legal_moves:
                 valid_move_string = uci_move
             else:
-                uci_move_promoted = uci_move + 'q'
+                if move_to_register:
+                    uci_move_promoted = move_to_register.uci()
+                else:
+                    uci_move_promoted = uci_move + 'q'
                 promoted_move = chess.Move.from_uci(uci_move_promoted)
                 if promoted_move in self.board.legal_moves:
                     valid_move_string = uci_move_promoted
-                    print("There has been a promotion to queen")
+                    #print("There has been a promotion")
 
         potential_squares = [square[1] for square in potential_squares]
         print(potential_squares)
@@ -99,6 +130,9 @@ class Game:
         if ("e8" in potential_squares) and ("a8" in potential_squares) and ("c8" in potential_squares) and (
                 "d8" in potential_squares) and (chess.Move.from_uci("e8c8") in self.board.legal_moves):
             valid_move_string = "e8c8"
+
+        if move_to_register and (move_to_register.uci() != valid_move_string):
+            return False, valid_move_string
 
         if valid_move_string:
             return True, valid_move_string

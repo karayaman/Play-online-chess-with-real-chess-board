@@ -1,4 +1,5 @@
 import cv2
+import platform
 from math import inf, sqrt
 import pickle
 from helper import rotateMatrix, perspective_transform
@@ -15,13 +16,20 @@ for argument in sys.argv:
         show_info = True
     elif argument.startswith("cap="):
         cap_index = int("".join(c for c in argument if c.isdigit()))
-        cap_api = cv2.CAP_DSHOW
+        platform_name = platform.system()
+        if platform_name == "Darwin":
+            cap_api = cv2.CAP_AVFOUNDATION
+        elif platform_name == "Linux":
+            cap_api = cv2.CAP_V4L2
+        else:
+            cap_api = cv2.CAP_DSHOW
 
 if show_info:
     root = tk.Tk()
     root.withdraw()
     messagebox.showinfo("Board Calibration",
                         'Board calibration will start. It should detect corners of the chess board almost immediately. If it does not, you should press key "q" to stop board calibration and change webcam/board position.')
+    root.destroy()
 
 
 def mark_corners(frame, augmented_corners, rotation_count):
@@ -75,6 +83,8 @@ while True:
     retval, corners = cv2.findChessboardCorners(gray, patternSize=board_dimensions)
     if retval:
         if show_info:
+            root = tk.Tk()
+            root.withdraw()
             messagebox.showinfo("Chess Board Detected",
                                 'Please check that corners of your chess board are correctly detected. The square covered by points (0,0), (0,1),(1,0) and (1,1) should be a8. You can rotate the image by pressing key "r" to adjust that. Press key "q" to save detected chess board corners and finish board calibration.')
             root.destroy()

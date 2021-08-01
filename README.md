@@ -5,7 +5,7 @@ Program that enables you to play online chess using real chess board.  Using com
 
 1. Turn off all the animations and extra features to keep chess board of online game as simple as possible.
 
-2. Take screenshots of chess board of online game at starting position, one for when you play white and one for when you play black and save them as "white.JPG" and "black.JPG" similar to the images included in the source code.
+2. Take screenshots of chess board of online game at starting position, one for when you play white and one for when you play black and save them as "white.JPG" and "black.JPG" similar to the images included in the source code. You can skip this step if you enable "Find chess board of online game without template images." option in the GUI.
 
 3. Enable auto promotion to queen from settings of online game.
 
@@ -13,7 +13,7 @@ Program that enables you to play online chess using real chess board.  Using com
 
 5. Remove all pieces from your chess board.
 
-6. Run "board_calibration.py".
+6. Run "board_calibration.py"(Alternatively, click "Board Calibration" button in the GUI).
 
 7. Check that corners of your chess board are correctly detected by "board_calibration.py" and press key "q" to save detected chess board corners. You don't need to manually select chess board corners, it should be automatically detected by the program. The square covered by points (0,0), (0,1),(1,0) and (1,1) should be a8. You can rotate the image by pressing key "r" to adjust that. Example chess board detection result:
 
@@ -25,7 +25,7 @@ Program that enables you to play online chess using real chess board.  Using com
 
 1. Place pieces of chess board to their starting position.
 2. Start the online game.
-3. Run "main.py".
+3. Run "main.py"(Alternatively, click "Start Game" button in the GUI).
 4. Switch to the online game so that program detects chess board of online game. You have 5 seconds to do this step.
 5.  Wait until program says "game started".
 6. Make your move if it's your turn , otherwise make opponent's move.
@@ -87,3 +87,4 @@ It should detect corners of the chess board almost immediately. Please do not sp
 - pyttsx3
 - scikit-image
 - pygrabber
+- mac-say
