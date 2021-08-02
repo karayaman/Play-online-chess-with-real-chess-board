@@ -48,6 +48,10 @@ In this section you can find video content related to the software.
 
 [Test game on Lichess against Alper Karayaman](https://youtu.be/rz-2QRwYVNY)
 
+[Game against Lionel45 on lichess org](https://youtu.be/YC5-6DXq_CI)
+
+[Game against erpalazzi on Lichess](https://youtu.be/XXKsIOWz9QQ)
+
 ## Frequently Asked Questions
 
 ### What is the program doing? How it works? 
