@@ -23,6 +23,7 @@ cap_index = 0
 cap_api = cv2.CAP_ANY
 voice_index = 0
 language = English()
+token = ""
 for argument in sys.argv:
     if argument == "no-template":
         use_template = False
@@ -54,6 +55,8 @@ for argument in sys.argv:
             language = Russian()
         elif "Turkish" in argument:
             language = Turkish()
+    elif argument.startswith("token="):
+        token = argument[len("token="):].strip()
 MOTION_START_THRESHOLD = 1.0
 HISTORY = 100
 MAX_MOVE_MEAN = 50
@@ -75,7 +78,7 @@ speech_thread.index = voice_index
 speech_thread.start()
 
 game = Game(board_basics, speech_thread, use_template, make_opponent, start_delay, comment_me, comment_opponent,
-            drag_drop, language)
+            drag_drop, language, token)
 
 video_capture_thread = Video_capture_thread()
 video_capture_thread.daemon = True

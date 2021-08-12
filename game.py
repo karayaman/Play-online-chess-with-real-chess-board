@@ -1,14 +1,31 @@
+import sys
 import time
 
 import chess
+import berserk
 from internet_game import Internet_game
+from lichess_game import Lichess_game
 from commentator import Commentator_thread
+from lichess_commentator import Lichess_commentator
 
 
 class Game:
     def __init__(self, board_basics, speech_thread, use_template, make_opponent, start_delay, comment_me,
-                 comment_opponent, drag_drop, language):
-        self.internet_game = Internet_game(use_template, start_delay, drag_drop)
+                 comment_opponent, drag_drop, language, token):
+        if token:
+            session = berserk.TokenSession(token)
+            client = berserk.Client(session)
+            games = client.games.get_ongoing()
+            if len(games) == 0:
+                print("No games found. Please create your game on Lichess.")
+                sys.exit(0)
+            if len(games) > 1:
+                print("Multiple games found. Please make sure there is only one ongoing game on Lichess.")
+                sys.exit(0)
+            game = games[0]
+            self.internet_game = Lichess_game(client, game)
+        else:
+            self.internet_game = Internet_game(use_template, start_delay, drag_drop)
         self.make_opponent = make_opponent
         self.board_basics = board_basics
         self.speech_thread = speech_thread
@@ -19,16 +36,27 @@ class Game:
         self.comment_opponent = comment_opponent
         self.language = language
 
-        commentator_thread = Commentator_thread()
-        commentator_thread.daemon = True
-        commentator_thread.speech_thread = self.speech_thread
-        commentator_thread.game_state.game_thread = self
-        commentator_thread.game_state.we_play_white = self.internet_game.we_play_white
-        commentator_thread.game_state.board_position_on_screen = self.internet_game.position
-        commentator_thread.comment_me = self.comment_me
-        commentator_thread.comment_opponent = self.comment_opponent
-        commentator_thread.language = self.language
-        self.commentator = commentator_thread
+        if token:
+            commentator_thread = Lichess_commentator()
+            commentator_thread.daemon = True
+            commentator_thread.stream = client.board.stream_game_state(game['gameId'])
+            commentator_thread.speech_thread = self.speech_thread
+            commentator_thread.comment_me = self.comment_me
+            commentator_thread.comment_opponent = self.comment_opponent
+            commentator_thread.language = self.language
+            self.commentator = commentator_thread
+        else:
+            commentator_thread = Commentator_thread()
+            commentator_thread.daemon = True
+            commentator_thread.speech_thread = self.speech_thread
+            commentator_thread.game_state.game_thread = self
+            commentator_thread.game_state.we_play_white = self.internet_game.we_play_white
+            commentator_thread.game_state.board_position_on_screen = self.internet_game.position
+            commentator_thread.comment_me = self.comment_me
+            commentator_thread.comment_opponent = self.comment_opponent
+            commentator_thread.language = self.language
+            self.commentator = commentator_thread
+
 
     def get_move_to_register(self):
         if self.commentator:
@@ -107,7 +135,7 @@ class Game:
                 promoted_move = chess.Move.from_uci(uci_move_promoted)
                 if promoted_move in self.board.legal_moves:
                     valid_move_string = uci_move_promoted
-                    #print("There has been a promotion")
+                    # print("There has been a promotion")
 
         potential_squares = [square[1] for square in potential_squares]
         print(potential_squares)

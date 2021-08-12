@@ -1,9 +1,22 @@
 import tkinter as tk
+from tkinter.simpledialog import askstring
 import subprocess
 import sys
 from threading import Thread
 
 running_process = None
+
+token = ""
+
+
+def lichess():
+    global token
+    new_token = askstring("Lichess API Access Token", "Please enter your Lichess API Access Token below.",
+                          initialvalue=token)
+    if new_token is None:
+        pass
+    else:
+        token = new_token
 
 
 def on_closing():
@@ -72,6 +85,9 @@ def start_game(ignore=None):
         arguments.append("comment-opponent")
     if drag_drop.get():
         arguments.append("drag")
+    global token
+    if token:
+        arguments.append("token=" + token)
     arguments.append("delay=" + str(values.index(default_value.get())))
 
     selected_camera = camera.get()
@@ -103,6 +119,15 @@ def start_game(ignore=None):
 
 window = tk.Tk()
 window.title("Play online chess with real chess board by Alper Karayaman")
+
+menu_bar = tk.Menu(window)
+connection = tk.Menu(menu_bar, tearoff=False)
+connection.add_command(label="Lichess", command=lichess)
+
+menu_bar.add_cascade(label="Connection", menu=connection)
+
+window.config(menu=menu_bar)
+
 no_template = tk.IntVar()
 make_opponent = tk.IntVar()
 drag_drop = tk.IntVar()

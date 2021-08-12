@@ -3,11 +3,11 @@ Program that enables you to play online chess using real chess board.  Using com
 
 ## Setup
 
-1. Turn off all the animations and extra features to keep chess board of online game as simple as possible.
+1. Turn off all the animations and extra features to keep chess board of online game as simple as possible. You can skip this step if you enter your Lichess API Access Token. 
 
-2. Take screenshots of chess board of online game at starting position, one for when you play white and one for when you play black and save them as "white.JPG" and "black.JPG" similar to the images included in the source code. You can skip this step if you enable "Find chess board of online game without template images." option in the GUI.
+2. Take screenshots of chess board of online game at starting position, one for when you play white and one for when you play black and save them as "white.JPG" and "black.JPG" similar to the images included in the source code. You can skip this step if you enable "Find chess board of online game without template images." option or enter your Lichess API Access Token.
 
-3. Enable auto promotion to queen from settings of online game.
+3. Enable auto promotion to queen from settings of online game. You can skip this step if you enter your Lichess API Access Token.
 
 4. Place your webcam near to your chessboard so that all of the squares and pieces can be clearly seen by it.
 
@@ -26,7 +26,7 @@ Program that enables you to play online chess using real chess board.  Using com
 1. Place pieces of chess board to their starting position.
 2. Start the online game.
 3. Run "main.py"(Alternatively, click "Start Game" button in the GUI).
-4. Switch to the online game so that program detects chess board of online game. You have 5 seconds to do this step.
+4. Switch to the online game so that program detects chess board of online game. You have 5 seconds to do this step. You can skip this step if you enter your Lichess API Access Token.
 5.  Wait until program says "game started".
 6. Make your move if it's your turn , otherwise make opponent's move.
 8. Notice that program actually makes your move on the internet game if it's your turn. Otherwise, wait until program says starting and ending squares of opponent's move. 
@@ -34,7 +34,7 @@ Program that enables you to play online chess using real chess board.  Using com
 
 ## GUI
 
-You can run "gui.py" to open the GUI. You can use it to do the steps in Setup and Usage sections and customize how you use the software. You can click "Start Game" button instead of running "main.py" and "Board Calibration" button instead of running "board_calibration.py".
+You can run "gui.py" to open the GUI. You can use it to do the steps in Setup and Usage sections and customize how you use the software. You can click "Start Game" button instead of running "main.py" and "Board Calibration" button instead of running "board_calibration.py". Also, you can enter your Lichess API Access Token via Connection&#8594;Lichess.
 
 ![](https://github.com/karayaman/Play-online-chess-with-real-chess-board/blob/main/gui.JPG?raw=true)
 
@@ -92,3 +92,4 @@ It should detect corners of the chess board almost immediately. Please do not sp
 - scikit-image
 - pygrabber
 - mac-say
+- berserk
