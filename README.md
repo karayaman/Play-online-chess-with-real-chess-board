@@ -34,7 +34,7 @@ Program that enables you to play online chess using real chess board.  Using com
 
 ## GUI
 
-You can run "gui.py" to open the GUI. You can use it to do the steps in Setup and Usage sections and customize how you use the software. You can click "Start Game" button instead of running "main.py" and "Board Calibration" button instead of running "board_calibration.py". Also, you can enter your Lichess API Access Token via Connection&#8594;Lichess.
+You can run "gui.py" to open the GUI. You can use it to do the steps in Setup and Usage sections and customize how you use the software. You can click "Start Game" button instead of running "main.py" and "Board Calibration" button instead of running "board_calibration.py". Also, you can enter your Lichess API Access Token via Connection&#8594;Lichess(You need to enable "Play games with the board API" while generating the token).
 
 ![](https://github.com/karayaman/Play-online-chess-with-real-chess-board/blob/main/gui.JPG?raw=true)
 

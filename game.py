@@ -41,6 +41,7 @@ class Game:
             commentator_thread.daemon = True
             commentator_thread.stream = client.board.stream_game_state(game['gameId'])
             commentator_thread.speech_thread = self.speech_thread
+            commentator_thread.game_state.we_play_white = self.internet_game.we_play_white
             commentator_thread.comment_me = self.comment_me
             commentator_thread.comment_opponent = self.comment_opponent
             commentator_thread.language = self.language

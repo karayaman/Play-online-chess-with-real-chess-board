@@ -33,12 +33,13 @@ class Game_state:
         #print(current_state)
         if 'state' in current_state:
             current_state = current_state['state']
-        moves = current_state['moves'].split()
-        if len(moves) > len(self.registered_moves):
-            valid_move_string = moves[len(self.registered_moves)]
-            valid_move_UCI = chess.Move.from_uci(valid_move_string)
-            self.register_move(valid_move_UCI)
-            return True, valid_move_UCI
+        if 'moves' in current_state:
+            moves = current_state['moves'].split()
+            if len(moves) > len(self.registered_moves):
+                valid_move_string = moves[len(self.registered_moves)]
+                valid_move_UCI = chess.Move.from_uci(valid_move_string)
+                self.register_move(valid_move_UCI)
+                return True, valid_move_UCI
         return False, "No move found"
 
     def register_move(self, move):
