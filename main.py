@@ -67,9 +67,8 @@ motion_fgbg = cv2.createBackgroundSubtractorKNN(history=HISTORY)
 
 filename = 'constants.bin'
 infile = open(filename, 'rb')
-corners, side_view_compensation, rotation_count = pickle.load(infile)
+corners, side_view_compensation, rotation_count, roi_mask = pickle.load(infile)
 infile.close()
-
 board_basics = Board_basics(side_view_compensation, rotation_count)
 
 speech_thread = Speech_thread()
@@ -78,7 +77,7 @@ speech_thread.index = voice_index
 speech_thread.start()
 
 game = Game(board_basics, speech_thread, use_template, make_opponent, start_delay, comment_me, comment_opponent,
-            drag_drop, language, token)
+            drag_drop, language, token, roi_mask)
 
 video_capture_thread = Video_capture_thread()
 video_capture_thread.daemon = True
@@ -168,7 +167,7 @@ while not game.board.is_game_over():
         last_frame = stabilize_background_subtractors()
         previous_frame = previous_frame_queue[0]
 
-        if game.register_move(fgmask, previous_frame, last_frame):
+        if (game.is_light_change(last_frame) == False) and game.register_move(fgmask, previous_frame, last_frame):
             pass
             # cv2.imwrite(game.executed_moves[-1] + " frame.jpg", last_frame)
             # cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)

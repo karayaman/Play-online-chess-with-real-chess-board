@@ -2,7 +2,7 @@ import cv2
 import platform
 from math import inf, sqrt
 import pickle
-from helper import rotateMatrix, perspective_transform
+from helper import rotateMatrix, perspective_transform, edge_detection
 import numpy as np
 import sys
 from tkinter import messagebox
@@ -11,12 +11,12 @@ import tkinter as tk
 show_info = False
 cap_index = 0
 cap_api = cv2.CAP_ANY
+platform_name = platform.system()
 for argument in sys.argv:
     if argument == "show-info":
         show_info = True
     elif argument.startswith("cap="):
         cap_index = int("".join(c for c in argument if c.isdigit()))
-        platform_name = platform.system()
         if platform_name == "Darwin":
             cap_api = cv2.CAP_AVFOUNDATION
         elif platform_name == "Linux":
@@ -29,7 +29,8 @@ if show_info:
     root.withdraw()
     messagebox.showinfo("Board Calibration",
                         'Board calibration will start. It should detect corners of the chess board almost immediately. If it does not, you should press key "q" to stop board calibration and change webcam/board position.')
-    root.destroy()
+    if platform_name == "Darwin":
+        root.destroy()
 
 
 def mark_corners(frame, augmented_corners, rotation_count):
@@ -83,8 +84,9 @@ while True:
     retval, corners = cv2.findChessboardCorners(gray, patternSize=board_dimensions)
     if retval:
         if show_info:
-            root = tk.Tk()
-            root.withdraw()
+            if platform_name == "Darwin":
+                root = tk.Tk()
+                root.withdraw()
             messagebox.showinfo("Chess Board Detected",
                                 'Please check that corners of your chess board are correctly detected. The square covered by points (0,0), (0,1),(1,0) and (1,1) should be a8. You can rotate the image by pressing key "r" to adjust that. Press key "q" to save detected chess board corners and finish board calibration.')
             root.destroy()
@@ -153,7 +155,23 @@ while True:
         pts1 = np.float32([list(augmented_corners[0][0]), list(augmented_corners[8][0]), list(augmented_corners[0][8]),
                            list(augmented_corners[8][8])])
 
-        empty_board = perspective_transform(gray, pts1)
+        empty_board = perspective_transform(frame, pts1)
+        edges = edge_detection(empty_board)
+        # cv2.imshow("edge", edges)
+        # cv2.waitKey(0)
+        kernel = np.ones((7, 7), np.uint8)
+        edges = cv2.dilate(edges, kernel, iterations=1)
+        roi_mask = cv2.bitwise_not(edges)
+        # cv2.imshow("edge", edges)
+        # cv2.waitKey(0)
+        # cv2.imshow("roi", roi_mask)
+        # cv2.waitKey(0)
+        roi_mask[:7, :] = 0
+        roi_mask[:, :7] = 0
+        roi_mask[-7:, :] = 0
+        roi_mask[:, -7:] = 0
+        # cv2.imshow("roi", roi_mask)
+        # cv2.waitKey(0)
         # cv2.imwrite("empty_board.jpg", empty_board)
 
         rotation_count = 0
@@ -199,5 +217,5 @@ print("Side view compensation" + str(side_view_compensation))
 print("Rotation count " + str(rotation_count))
 filename = 'constants.bin'
 outfile = open(filename, 'wb')
-pickle.dump([augmented_corners, side_view_compensation, rotation_count], outfile)
+pickle.dump([augmented_corners, side_view_compensation, rotation_count, roi_mask], outfile)
 outfile.close()

@@ -61,6 +61,10 @@ def board_calibration(ignore=None):
         arguments.append("cap=" + str(cap_index))
     process = subprocess.Popen(arguments, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT)
+    # startupinfo = subprocess.STARTUPINFO()
+    # startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    # process = subprocess.Popen(arguments, stdout=subprocess.PIPE,
+    #                           stderr=subprocess.STDOUT, stdin=subprocess.PIPE, startupinfo=startupinfo)
     # process = subprocess.Popen(arguments, stdout=subprocess.PIPE,
     #                           stderr=subprocess.STDOUT, cwd=working_directory)
     global running_process
@@ -107,8 +111,11 @@ def start_game(ignore=None):
                 language = l
                 break
         arguments.append("lang=" + language)
-
     process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # startupinfo = subprocess.STARTUPINFO()
+    # startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    # process = subprocess.Popen(arguments, stdout=subprocess.PIPE,
+    #                           stderr=subprocess.STDOUT, stdin=subprocess.PIPE, startupinfo=startupinfo)
     # process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=working_directory)
     global running_process
     running_process = process

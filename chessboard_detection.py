@@ -140,7 +140,7 @@ def find_chessboard_from_image(img):
         dim = (800, 800)
         resized_board = cv2.resize(board, dim,
                                    interpolation=cv2.INTER_AREA)
-        #cv2.imwrite("board.jpg", resized_board)
+        # cv2.imwrite("board.jpg", resized_board)
         return True, resized_board, int(x_min), int(y_min), int(x_max), int(y_max), resized_board
     else:
         print("Chess board of online game could not be found.")

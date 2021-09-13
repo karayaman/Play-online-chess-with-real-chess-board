@@ -129,7 +129,7 @@ class Board_basics:
                 ssim = structural_similarity(next_board[row][column],
                                              previous_board[row][column], multichannel=True)
                 square_name = self.convert_row_column_to_square_name(row, column)
-                #print(ssim, square_name)
+                print(ssim, square_name)
                 if ssim > self.SSIM_THRESHOLD:
                     continue
                 square = chess.parse_square(square_name)

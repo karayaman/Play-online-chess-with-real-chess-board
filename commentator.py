@@ -82,13 +82,13 @@ class Game_state:
             isEmpty = result[rowOnImage][columnOnImage] == '.'
             if isEmpty != shouldBeEmpty:
                 self.board.pop()
-                #print("Problem with : ", self.board.uci(move), " the square ",
+                # print("Problem with : ", self.board.uci(move), " the square ",
                 #      self.convert_row_column_to_square_name(row, column), "should ",
                 #      'be empty' if shouldBeEmpty else 'contain a piece')
                 return False
             if piece and (piece.symbol().lower() != result[rowOnImage][columnOnImage]):
                 self.board.pop()
-                #print(piece.symbol(), result[rowOnImage][columnOnImage],
+                # print(piece.symbol(), result[rowOnImage][columnOnImage],
                 #      self.convert_row_column_to_square_name(rowOnImage, columnOnImage))
                 return False
         self.board.pop()
@@ -252,7 +252,7 @@ class Game_state:
             self.board.push(move)
             self.previous_chessboard_image = board_image
             self.registered_moves.append(move)
-            #cv2.imwrite("registered.jpg", board_image)
+            # cv2.imwrite("registered.jpg", board_image)
             return True
         else:
             return False

@@ -3,6 +3,8 @@ import time
 
 import chess
 import berserk
+
+from helper import detect_state
 from internet_game import Internet_game
 from lichess_game import Lichess_game
 from commentator import Commentator_thread
@@ -11,7 +13,7 @@ from lichess_commentator import Lichess_commentator
 
 class Game:
     def __init__(self, board_basics, speech_thread, use_template, make_opponent, start_delay, comment_me,
-                 comment_opponent, drag_drop, language, token):
+                 comment_opponent, drag_drop, language, token, roi_mask):
         if token:
             session = berserk.TokenSession(token)
             client = berserk.Client(session)
@@ -35,6 +37,7 @@ class Game:
         self.comment_me = comment_me
         self.comment_opponent = comment_opponent
         self.language = language
+        self.roi_mask = roi_mask
 
         if token:
             commentator_thread = Lichess_commentator()
@@ -58,7 +61,6 @@ class Game:
             commentator_thread.language = self.language
             self.commentator = commentator_thread
 
-
     def get_move_to_register(self):
         if self.commentator:
             if len(self.executed_moves) < len(self.commentator.game_state.registered_moves):
@@ -68,16 +70,109 @@ class Game:
         else:
             return None
 
-    def register_move(self, fgmask, previous_frame, next_frame):
-        potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask, previous_frame, next_frame,
-                                                                                   self.board)
-        success, valid_move_string1 = self.get_valid_move(potential_squares, potential_moves)
-        print("Valid move string:" + valid_move_string1)
-        if not success:
-            self.speech_thread.put_text(self.language.move_failed)
+    def is_light_change(self, frame):
+        result = detect_state(frame, self.board_basics.d[0], self.roi_mask)
+        state = self.check_state_for_light(result)
+        if state:
+            print("Light change")
+            return True
+        else:
             return False
 
-        valid_move_UCI = chess.Move.from_uci(valid_move_string1)
+    def check_state_for_move(self, result):
+        for row in range(8):
+            for column in range(8):
+                square_name = self.board_basics.convert_row_column_to_square_name(row, column)
+                square = chess.parse_square(square_name)
+                piece = self.board.piece_at(square)
+                if piece and (True not in result[row][column]):
+                    print("Expected piece at " + square_name)
+                    return False
+                if (not piece) and (False not in result[row][column]):
+                    print("Expected empty at " + square_name)
+                    return False
+        return True
+
+    def check_state_for_light(self, result):
+        for row in range(8):
+            for column in range(8):
+                square_name = self.board_basics.convert_row_column_to_square_name(row, column)
+                square = chess.parse_square(square_name)
+                piece = self.board.piece_at(square)
+                if piece and (False in result[row][column]):
+                    print(square_name)
+                    return False
+                if (not piece) and (True in result[row][column]):
+                    print(square_name)
+                    return False
+        return True
+
+    def get_valid_move_canny(self, fgmask, frame):
+        print("Canny working")
+        board = [[self.board_basics.get_square_image(row, column, fgmask).mean() for column in range(8)] for row in
+                 range(8)]
+        potential_squares = []
+        square_scores = {}
+        for row in range(8):
+            for column in range(8):
+                score = board[row][column]
+                if score < 10.0:
+                    continue
+                square_name = self.board_basics.convert_row_column_to_square_name(row, column)
+                square = chess.parse_square(square_name)
+                potential_squares.append(square)
+                square_scores[square] = score
+
+        move_to_register = self.get_move_to_register()
+        potential_moves = []
+
+        board_result = detect_state(frame, self.board_basics.d[0], self.roi_mask)
+        if move_to_register:
+            if (move_to_register.from_square in potential_squares) and (
+                    move_to_register.to_square in potential_squares):
+                self.board.push(move_to_register)
+                if self.check_state_for_move(board_result):
+                    print("Canny!")
+                    self.board.pop()
+                    return True, move_to_register.uci()
+                else:
+                    self.board.pop()
+                    return False, ""
+        else:
+            for move in self.board.legal_moves:
+                if (move.from_square in potential_squares) and (move.to_square in potential_squares):
+                    if move.promotion and move.promotion != chess.QUEEN:
+                        continue
+                    self.board.push(move)
+                    if self.check_state_for_move(board_result):
+                        self.board.pop()
+                        total_score = square_scores[move.from_square] + square_scores[move.to_square]
+                        potential_moves.append((total_score, move.uci()))
+                    else:
+                        self.board.pop()
+        if potential_moves:
+            print("Canny!")
+            return True, max(potential_moves)[1]
+        else:
+            return False, ""
+
+    def register_move(self, fgmask, previous_frame, next_frame):
+        potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask, previous_frame,
+                                                                                   next_frame,
+                                                                                   self.board)
+        success, valid_move_string = self.get_valid_move(potential_squares, potential_moves)
+        print("Valid move string:" + valid_move_string)
+        if not success:
+            success, valid_move_string = self.get_valid_move_canny(fgmask, next_frame)
+            print("Valid move string 2:" + valid_move_string)
+            if success:
+                pass
+            else:
+                self.speech_thread.put_text(self.language.move_failed)
+                print(self.board.fen())
+                return False
+
+        valid_move_UCI = chess.Move.from_uci(valid_move_string)
 
         print("Move has been registered")
 
@@ -91,7 +186,7 @@ class Game:
                     valid_move_UCI = move_to_register
                     break
         else:
-            self.speech_thread.put_text(valid_move_string1[:4])
+            self.speech_thread.put_text(valid_move_string[:4])
             self.played_moves.append(valid_move_UCI)
 
         self.executed_moves.append(self.board.san(valid_move_UCI))
@@ -164,6 +259,7 @@ class Game:
             return False, valid_move_string
 
         if valid_move_string:
+            print("ssim!")
             return True, valid_move_string
         else:
             return False, valid_move_string

@@ -30,7 +30,6 @@ class Game_state:
 
     def register_move_if_needed(self, stream):
         current_state = next(stream)
-        #print(current_state)
         if 'state' in current_state:
             current_state = current_state['state']
         if 'moves' in current_state:
