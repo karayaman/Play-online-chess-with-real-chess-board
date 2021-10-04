@@ -52,6 +52,8 @@ In this section you can find video content related to the software.
 
 [Game against erpalazzi on Lichess](https://youtu.be/XXKsIOWz9QQ)
 
+[Play online chess with real chess board and web camera | NO DGT BOARD!](https://www.youtube.com/watch?v=LX-4czb3xi0&lc=Ugxo6cXY0cR2TArDpuZ4AaABAg)
+
 ## Frequently Asked Questions
 
 ### What is the program doing? How it works? 
