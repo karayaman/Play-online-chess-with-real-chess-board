@@ -138,6 +138,7 @@ def stabilize_background_subtractors():
 
 previous_frame = stabilize_background_subtractors()
 board_basics.initialize_ssim(previous_frame)
+game.initialize_hog(previous_frame)
 previous_frame_queue = deque(maxlen=10)
 previous_frame_queue.append(previous_frame)
 speech_thread.put_text(language.game_started)

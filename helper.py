@@ -46,7 +46,6 @@ def edge_detection(frame):
     edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel2)
     return edges
 
-
 def get_square_image(row, column,
                      board_img):
     height, width = board_img.shape[:2]

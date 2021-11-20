@@ -1,5 +1,5 @@
 from skimage.metrics import structural_similarity
-
+import cv2
 import chess
 
 
@@ -63,6 +63,8 @@ class Board_basics:
               self.SSIM_THRESHOLD_DARK_BLACK)
         self.ssim_table = [[self.SSIM_THRESHOLD_DARK_BLACK, self.SSIM_THRESHOLD_DARK_WHITE],
                            [self.SSIM_THRESHOLD_LIGHT_BLACK, self.SSIM_THRESHOLD_LIGHT_WHITE]]
+
+
 
     def get_square_image(self, row, column,
                          board_img):
