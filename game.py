@@ -4,19 +4,19 @@ import chess
 import cv2
 import numpy as np
 from helper import detect_state, get_square_image
-from internet_game import Internet_game
-from lichess_game import Lichess_game
-from commentator import Commentator_thread
-from lichess_commentator import Lichess_commentator
+from internet_game import InternetGame
+from lichess_game import LichessGame
+from commentator import CommentatorThread
+from lichess_commentator import LichessCommentator
 
 
 class Game:
     def __init__(self, board_basics, speech_thread, use_template, make_opponent, start_delay, comment_me,
                  comment_opponent, drag_drop, language, token, roi_mask):
         if token:
-            self.internet_game = Lichess_game(token)
+            self.internet_game = LichessGame(token)
         else:
-            self.internet_game = Internet_game(use_template, start_delay, drag_drop)
+            self.internet_game = InternetGame(use_template, start_delay, drag_drop)
         self.make_opponent = make_opponent
         self.board_basics = board_basics
         self.speech_thread = speech_thread
@@ -33,7 +33,7 @@ class Game:
         self.labels = None
 
         if token:
-            commentator_thread = Lichess_commentator()
+            commentator_thread = LichessCommentator()
             commentator_thread.daemon = True
             commentator_thread.stream = self.internet_game.client.board.stream_game_state(self.internet_game.game_id)
             commentator_thread.speech_thread = self.speech_thread
@@ -43,7 +43,7 @@ class Game:
             commentator_thread.language = self.language
             self.commentator = commentator_thread
         else:
-            commentator_thread = Commentator_thread()
+            commentator_thread = CommentatorThread()
             commentator_thread.daemon = True
             commentator_thread.speech_thread = self.speech_thread
             commentator_thread.game_state.game_thread = self

@@ -7,7 +7,7 @@ import mss
 from statistics import median
 
 
-class Board_position:
+class BoardPosition:
     def __init__(self, minX, minY, maxX, maxY):
         self.minX = minX
         self.minY = minY
@@ -39,7 +39,7 @@ def find_chessboard():
     maxX = minX + small_image.shape[1]
     maxY = minY + small_image.shape[0]
 
-    position = Board_position(minX, minY, maxX, maxY)
+    position = BoardPosition(minX, minY, maxX, maxY)
     return position, we_are_white
 
 
@@ -52,7 +52,7 @@ def auto_find_chessboard():
     is_found, current_chessboard_image, minX, minY, maxX, maxY, test_image = find_chessboard_from_image(img)
     if not is_found:
         sys.exit(0)
-    position = Board_position(minX, minY, maxX, maxY)
+    position = BoardPosition(minX, minY, maxX, maxY)
     return position, is_white_on_bottom(current_chessboard_image)
 
 

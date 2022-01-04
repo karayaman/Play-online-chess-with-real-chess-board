@@ -3,10 +3,10 @@ from queue import Queue
 import platform
 
 
-class Speech_thread(Thread):
+class SpeechThread(Thread):
 
     def __init__(self, *args, **kwargs):
-        super(Speech_thread, self).__init__(*args, **kwargs)
+        super(SpeechThread, self).__init__(*args, **kwargs)
         self.queue = Queue()
         self.index = None
 

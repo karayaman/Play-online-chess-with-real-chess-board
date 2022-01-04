@@ -3,7 +3,7 @@ import pyautogui
 import time
 
 
-class Internet_game:
+class InternetGame:
     def __init__(self, use_template, start_delay, drag_drop):
         self.drag_drop = drag_drop
         time.sleep(start_delay)

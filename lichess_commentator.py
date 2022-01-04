@@ -2,13 +2,13 @@ from threading import Thread
 import chess
 
 
-class Lichess_commentator(Thread):
+class LichessCommentator(Thread):
 
     def __init__(self, *args, **kwargs):
-        super(Lichess_commentator, self).__init__(*args, **kwargs)
+        super(LichessCommentator, self).__init__(*args, **kwargs)
         self.stream = None
         self.speech_thread = None
-        self.game_state = Game_state()
+        self.game_state = GameState()
         self.comment_me = None
         self.comment_opponent = None
         self.language = None
@@ -21,7 +21,7 @@ class Lichess_commentator(Thread):
                 self.speech_thread.put_text(self.language.comment(self.game_state.board, move))
 
 
-class Game_state:
+class GameState:
 
     def __init__(self):
         self.we_play_white = None

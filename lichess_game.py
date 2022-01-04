@@ -1,7 +1,7 @@
 import berserk
 import sys
 
-class Lichess_game:
+class LichessGame:
     def __init__(self, token):
         session = berserk.TokenSession(token)
         client = berserk.Client(session)

@@ -7,12 +7,12 @@ import time
 from classifier import Classifier
 
 
-class Commentator_thread(Thread):
+class CommentatorThread(Thread):
 
     def __init__(self, *args, **kwargs):
-        super(Commentator_thread, self).__init__(*args, **kwargs)
+        super(CommentatorThread, self).__init__(*args, **kwargs)
         self.speech_thread = None
-        self.game_state = Game_state()
+        self.game_state = GameState()
         self.comment_me = None
         self.comment_opponent = None
         self.language = None
@@ -30,7 +30,7 @@ class Commentator_thread(Thread):
                 self.speech_thread.put_text(self.language.comment(self.game_state.board, move))
 
 
-class Game_state:
+class GameState:
 
     def __init__(self):
         self.game_thread = None

@@ -2,10 +2,10 @@ from threading import Thread
 from queue import Queue
 
 
-class Video_capture_thread(Thread):
+class VideoCaptureThread(Thread):
 
     def __init__(self, *args, **kwargs):
-        super(Video_capture_thread, self).__init__(*args, **kwargs)
+        super(VideoCaptureThread, self).__init__(*args, **kwargs)
         self.queue = Queue()
         self.capture = None
 

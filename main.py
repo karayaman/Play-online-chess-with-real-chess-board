@@ -7,10 +7,10 @@ from collections import deque
 import platform
 
 from game import Game
-from board_basics import Board_basics
+from board_basics import BoardBasics
 from helper import perspective_transform
-from speech import Speech_thread
-from videocapture import Video_capture_thread
+from speech import SpeechThread
+from videocapture import VideoCaptureThread
 from languages import *
 
 use_template = True
@@ -69,9 +69,9 @@ filename = 'constants.bin'
 infile = open(filename, 'rb')
 corners, side_view_compensation, rotation_count, roi_mask = pickle.load(infile)
 infile.close()
-board_basics = Board_basics(side_view_compensation, rotation_count)
+board_basics = BoardBasics(side_view_compensation, rotation_count)
 
-speech_thread = Speech_thread()
+speech_thread = SpeechThread()
 speech_thread.daemon = True
 speech_thread.index = voice_index
 speech_thread.start()
@@ -79,7 +79,7 @@ speech_thread.start()
 game = Game(board_basics, speech_thread, use_template, make_opponent, start_delay, comment_me, comment_opponent,
             drag_drop, language, token, roi_mask)
 
-video_capture_thread = Video_capture_thread()
+video_capture_thread = VideoCaptureThread()
 video_capture_thread.daemon = True
 video_capture_thread.capture = cv2.VideoCapture(cap_index, cap_api)
 video_capture_thread.start()
