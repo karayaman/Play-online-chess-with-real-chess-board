@@ -83,15 +83,10 @@ Program asked you to redo your move because it understood that you made a move. 
 
 It should detect corners of the chess board almost immediately. Please do not spend any time waiting for it to detect corners of the chess board. If it can't detect corners of the chess board almost immediately, this means that it can't see your chess board well from that position/angle. Placing your webcam somewhere a bit higher or lower might solve the issue.
 
-## Required libraries
+## Install dependencies
 
-- opencv-python
-- python-chess
-- pyautogui
-- mss
-- numpy
-- pyttsx3
-- scikit-image
-- pygrabber
-- mac-say
-- berserk
+You can easily install the required libraries with the following command:
+```
+$ pip install -r requirements.txt
+```
+
