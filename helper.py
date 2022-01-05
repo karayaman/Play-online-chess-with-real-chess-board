@@ -10,7 +10,7 @@ def perspective_transform(image, pts1):
     return dst
 
 
-def rotateMatrix(matrix):
+def rotate_matrix(matrix):
     size = len(matrix)
     for row in range(size // 2):
         for column in range(row, size - row - 1):

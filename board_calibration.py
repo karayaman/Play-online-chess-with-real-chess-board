@@ -2,7 +2,7 @@ import cv2
 import platform
 from math import inf, sqrt
 import pickle
-from helper import rotateMatrix, perspective_transform, edge_detection
+from helper import rotate_matrix, perspective_transform, edge_detection
 import numpy as np
 import sys
 from tkinter import messagebox
@@ -150,7 +150,7 @@ while True:
 
         while augmented_corners[0][0][0] > augmented_corners[8][8][0] or augmented_corners[0][0][1] > \
                 augmented_corners[8][8][1]:
-            rotateMatrix(augmented_corners)
+            rotate_matrix(augmented_corners)
 
         pts1 = np.float32([list(augmented_corners[0][0]), list(augmented_corners[8][0]), list(augmented_corners[0][8]),
                            list(augmented_corners[8][8])])

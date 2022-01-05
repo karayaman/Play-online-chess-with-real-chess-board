@@ -88,7 +88,7 @@ pts1 = np.float32([list(corners[0][0]), list(corners[8][0]), list(corners[0][8])
                    list(corners[8][8])])
 
 
-def waitUntilMotionCompletes():
+def wait_until_motion_completes():
     counter = 0
     while counter < COUNTER_MAX_VALUE:
         frame = video_capture_thread.get_frame()
@@ -154,7 +154,7 @@ while not game.board.is_game_over():
     mean = fgmask.mean()
     if mean > MOTION_START_THRESHOLD:
         # cv2.imwrite("motion.jpg", fgmask)
-        waitUntilMotionCompletes()
+        wait_until_motion_completes()
         frame = video_capture_thread.get_frame()
         frame = perspective_transform(frame, pts1)
         fgmask = move_fgbg.apply(frame, learningRate=0.0)
