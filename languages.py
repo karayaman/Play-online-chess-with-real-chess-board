@@ -243,3 +243,73 @@ class Turkish:
             comment += " terfi"
         comment += check
         return comment
+
+
+class Italian:
+    def __init__(self):
+        self.game_started = "Gioco iniziato"
+        self.move_failed = "Registrazione spostamento non riuscita. Per favore rifai la tua mossa."
+
+    def name(self, piece_type):
+        if piece_type == chess.PAWN:
+            return "pedone"
+        elif piece_type == chess.KNIGHT:
+            return "cavallo"
+        elif piece_type == chess.BISHOP:
+            return "alfiere"
+        elif piece_type == chess.ROOK:
+            return "torre"
+        elif piece_type == chess.QUEEN:
+            return "regina"
+        elif piece_type == chess.KING:
+            return "re"
+
+    def prefix_name(self, piece_type):
+        if piece_type == chess.PAWN:
+            return "il pedone"
+        elif piece_type == chess.KNIGHT:
+            return "il cavallo"
+        elif piece_type == chess.BISHOP:
+            return "l'alfiere"
+        elif piece_type == chess.ROOK:
+            return "la torre"
+        elif piece_type == chess.QUEEN:
+            return "la regina"
+        elif piece_type == chess.KING:
+            return "il re"
+
+    def comment(self, board, move):
+        check = ""
+        if board.is_checkmate():
+            check = " scacco matto"
+        elif board.is_check():
+            check = " scacco"
+        board.pop()
+        if board.is_kingside_castling(move):
+            board.push(move)
+            return "arrocco corto" + check
+        if board.is_queenside_castling(move):
+            board.push(move)
+            return "arrocco lungo" + check
+
+        piece = board.piece_at(move.from_square)
+        from_square = chess.square_name(move.from_square)
+        to_square = chess.square_name(move.to_square)
+        promotion = move.promotion
+
+        is_capture = board.is_capture(move)
+        board.push(move)
+        comment = ""
+        if is_capture:
+            comment += self.prefix_name(piece.piece_type)
+            comment += " " + from_square
+            comment += " cattura"
+            comment += " " + to_square
+        else:
+            comment += self.name(piece.piece_type)
+            comment += " da " + from_square
+            comment += " a " + to_square
+        if promotion:
+            comment += " promuove a " + self.name(promotion)
+        comment += check
+        return comment

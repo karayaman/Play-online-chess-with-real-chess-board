@@ -55,6 +55,8 @@ for argument in sys.argv:
             language = Russian()
         elif "Turkish" in argument:
             language = Turkish()
+        elif "Italian" in argument:
+            language = Italian()
     elif argument.startswith("token="):
         token = argument[len("token="):].strip()
 MOTION_START_THRESHOLD = 1.0
