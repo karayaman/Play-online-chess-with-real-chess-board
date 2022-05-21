@@ -38,6 +38,7 @@ class Game:
             commentator_thread.stream = self.internet_game.client.board.stream_game_state(self.internet_game.game_id)
             commentator_thread.speech_thread = self.speech_thread
             commentator_thread.game_state.we_play_white = self.internet_game.we_play_white
+            commentator_thread.game_state.game = self
             commentator_thread.comment_me = self.comment_me
             commentator_thread.comment_opponent = self.comment_opponent
             commentator_thread.language = self.language

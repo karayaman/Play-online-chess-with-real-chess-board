@@ -41,6 +41,7 @@ class Game_state:
         self.sct = mss.mss()
         self.classifier = None
         self.registered_moves = []
+        self.resign_or_draw = False
 
     def get_chessboard(self):
         position = self.board_position_on_screen

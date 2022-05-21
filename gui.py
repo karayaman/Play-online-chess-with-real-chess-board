@@ -3,6 +3,8 @@ from tkinter.simpledialog import askstring
 import subprocess
 import sys
 from threading import Thread
+import pickle
+import os
 
 running_process = None
 
@@ -23,6 +25,7 @@ def on_closing():
     if running_process:
         if running_process.poll() is None:
             running_process.terminate()
+    save_settings()
     window.destroy()
 
 
@@ -236,5 +239,33 @@ scroll_bar.config(command=logs_text.yview)
 scroll_bar.pack(side=tk.RIGHT, fill=tk.Y)
 logs_text.pack(side="left")
 
+fields = [no_template, make_opponent, comment_me, comment_opponent, drag_drop, default_value, camera, voice]
+save_file = 'gui.bin'
+
+
+def save_settings():
+    outfile = open(save_file, 'wb')
+    pickle.dump([field.get() for field in fields] + [token], outfile)
+    outfile.close()
+
+
+def load_settings():
+    if os.path.exists(save_file):
+        infile = open(save_file, 'rb')
+        variables = pickle.load(infile)
+        infile.close()
+        global token
+        token = variables[-1]
+        if variables[-2] in VOICE_OPTIONS:
+            voice.set(variables[-2])
+
+        if variables[-3] in OPTIONS:
+            camera.set(variables[-3])
+
+        for i in range(6):
+            fields[i].set(variables[i])
+
+
+load_settings()
 window.protocol("WM_DELETE_WINDOW", on_closing)
 window.mainloop()

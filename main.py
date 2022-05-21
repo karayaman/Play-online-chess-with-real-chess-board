@@ -145,7 +145,7 @@ previous_frame_queue = deque(maxlen=10)
 previous_frame_queue.append(previous_frame)
 speech_thread.put_text(language.game_started)
 game.commentator.start()
-while not game.board.is_game_over():
+while not game.board.is_game_over() and not game.commentator.game_state.resign_or_draw:
     sys.stdout.flush()
     frame = video_capture_thread.get_frame()
     frame = perspective_transform(frame, pts1)

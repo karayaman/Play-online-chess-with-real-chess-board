@@ -41,16 +41,16 @@ class Board_basics:
                     else:
                         dark_black.append(self.get_square_image(row, column, frame))
         ssim_light_white = max(structural_similarity(empty,
-                                                     piece, multichannel=True) for piece, empty in
+                                                     piece, channel_axis=-1) for piece, empty in
                                zip(light_white, light_empty))
         ssim_light_black = max(structural_similarity(empty,
-                                                     piece, multichannel=True) for piece, empty in
+                                                     piece, channel_axis=-1) for piece, empty in
                                zip(light_black, light_empty))
         ssim_dark_white = max(structural_similarity(empty,
-                                                    piece, multichannel=True) for piece, empty in
+                                                    piece, channel_axis=-1) for piece, empty in
                               zip(dark_white, dark_empty))
         ssim_dark_black = max(structural_similarity(empty,
-                                                    piece, multichannel=True) for piece, empty in
+                                                    piece, channel_axis=-1) for piece, empty in
                               zip(dark_black, dark_empty))
         self.SSIM_THRESHOLD_LIGHT_WHITE = min(self.SSIM_THRESHOLD_LIGHT_WHITE, ssim_light_white + 0.2)
         self.SSIM_THRESHOLD_LIGHT_BLACK = min(self.SSIM_THRESHOLD_LIGHT_BLACK, ssim_light_black + 0.2)
@@ -129,7 +129,7 @@ class Board_basics:
                     continue
 
                 ssim = structural_similarity(next_board[row][column],
-                                             previous_board[row][column], multichannel=True)
+                                             previous_board[row][column], channel_axis=-1)
                 square_name = self.convert_row_column_to_square_name(row, column)
                 print(ssim, square_name)
                 if ssim > self.SSIM_THRESHOLD:

@@ -27,6 +27,8 @@ class Game_state:
         self.we_play_white = None
         self.board = chess.Board()
         self.registered_moves = []
+        self.resign_or_draw = False
+        self.game = None
 
     def register_move_if_needed(self, stream):
         current_state = next(stream)
@@ -39,6 +41,10 @@ class Game_state:
                 valid_move_UCI = chess.Move.from_uci(valid_move_string)
                 self.register_move(valid_move_UCI)
                 return True, valid_move_UCI
+            while len(moves) < len(self.registered_moves):
+                self.unregister_move()
+        if 'status' in current_state and current_state['status'] in ["resign", "draw"]:
+            self.resign_or_draw = True
         return False, "No move found"
 
     def register_move(self, move):
@@ -48,3 +54,12 @@ class Game_state:
             return True
         else:
             return False
+
+    def unregister_move(self):
+        self.board.pop()
+        self.registered_moves.pop()
+        if len(self.registered_moves) < len(self.game.executed_moves):
+            self.game.executed_moves.pop()
+            self.game.played_moves.pop()
+            self.game.board.pop()
+            self.game.internet_game.is_our_turn = not self.game.internet_game.is_our_turn
