@@ -29,10 +29,16 @@ class Game_state:
         self.registered_moves = []
         self.resign_or_draw = False
         self.game = None
+        self.variant = 'wait'
 
     def register_move_if_needed(self, stream):
         current_state = next(stream)
         if 'state' in current_state:
+            if current_state['initialFen'] == 'startpos':
+                self.variant = 'standard'
+            else:
+                self.variant = 'fromPosition'
+                self.from_position(current_state['initialFen'])
             current_state = current_state['state']
         if 'moves' in current_state:
             moves = current_state['moves'].split()
@@ -62,4 +68,10 @@ class Game_state:
             self.game.executed_moves.pop()
             self.game.played_moves.pop()
             self.game.board.pop()
+            self.game.internet_game.is_our_turn = not self.game.internet_game.is_our_turn
+
+    def from_position(self, fen):
+        self.board = chess.Board(fen)
+        self.game.board = chess.Board(fen)
+        if self.board.turn == chess.BLACK:
             self.game.internet_game.is_our_turn = not self.game.internet_game.is_our_turn

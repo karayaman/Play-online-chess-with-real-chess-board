@@ -3,6 +3,9 @@ import time
 import chess
 import cv2
 import numpy as np
+import pickle
+import os
+import sys
 from helper import detect_state, get_square_image
 from internet_game import Internet_game
 from lichess_game import Lichess_game
@@ -31,6 +34,7 @@ class Game:
         self.knn = cv2.ml.KNearest_create()
         self.features = None
         self.labels = None
+        self.save_file = 'hog.bin'
 
         if token:
             commentator_thread = Lichess_commentator()
@@ -81,6 +85,20 @@ class Game:
         self.knn.train(features, cv2.ml.ROW_SAMPLE, labels)
         self.features = features
         self.labels = labels
+
+        outfile = open(self.save_file, 'wb')
+        pickle.dump([features, labels], outfile)
+        outfile.close()
+
+    def load_hog(self):
+        if os.path.exists(self.save_file):
+            infile = open(self.save_file, 'rb')
+            self.features, self.labels = pickle.load(infile)
+            infile.close()
+            self.knn.train(self.features, cv2.ml.ROW_SAMPLE, self.labels)
+        else:
+            print("You need to play at least 1 game before starting a game from position.")
+            sys.exit(0)
 
     def detect_state_hog(self, chessboard_image):
         chessboard_image = cv2.cvtColor(chessboard_image, cv2.COLOR_BGR2GRAY)

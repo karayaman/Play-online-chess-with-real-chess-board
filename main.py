@@ -139,12 +139,18 @@ def stabilize_background_subtractors():
 
 
 previous_frame = stabilize_background_subtractors()
-board_basics.initialize_ssim(previous_frame)
-game.initialize_hog(previous_frame)
 previous_frame_queue = deque(maxlen=10)
 previous_frame_queue.append(previous_frame)
 speech_thread.put_text(language.game_started)
 game.commentator.start()
+while game.commentator.game_state.variant == 'wait':
+    time.sleep(0.1)
+if game.commentator.game_state.variant == 'standard':
+    board_basics.initialize_ssim(previous_frame)
+    game.initialize_hog(previous_frame)
+else:
+    board_basics.load_ssim()
+    game.load_hog()
 while not game.board.is_game_over() and not game.commentator.game_state.resign_or_draw:
     sys.stdout.flush()
     frame = video_capture_thread.get_frame()

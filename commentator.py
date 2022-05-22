@@ -42,6 +42,7 @@ class Game_state:
         self.classifier = None
         self.registered_moves = []
         self.resign_or_draw = False
+        self.variant = 'standard'
 
     def get_chessboard(self):
         position = self.board_position_on_screen

@@ -1,7 +1,9 @@
-from skimage.metrics import structural_similarity
-import cv2
-import chess
+import sys
 
+from skimage.metrics import structural_similarity
+import chess
+import pickle
+import os
 
 class Board_basics:
     def __init__(self, side_view_compensation, rotation_count):
@@ -14,6 +16,7 @@ class Board_basics:
         self.SSIM_THRESHOLD_DARK_BLACK = 1.0
         self.ssim_table = [[self.SSIM_THRESHOLD_DARK_BLACK, self.SSIM_THRESHOLD_DARK_WHITE],
                            [self.SSIM_THRESHOLD_LIGHT_BLACK, self.SSIM_THRESHOLD_LIGHT_WHITE]]
+        self.save_file = "ssim.bin"
 
     def initialize_ssim(self, frame):
         light_white = []
@@ -64,7 +67,24 @@ class Board_basics:
         self.ssim_table = [[self.SSIM_THRESHOLD_DARK_BLACK, self.SSIM_THRESHOLD_DARK_WHITE],
                            [self.SSIM_THRESHOLD_LIGHT_BLACK, self.SSIM_THRESHOLD_LIGHT_WHITE]]
 
+        outfile = open(self.save_file, 'wb')
+        pickle.dump((self.SSIM_THRESHOLD_LIGHT_WHITE, self.SSIM_THRESHOLD_LIGHT_BLACK, self.SSIM_THRESHOLD_DARK_WHITE,
+                     self.SSIM_THRESHOLD_DARK_BLACK, self.SSIM_THRESHOLD), outfile)
+        outfile.close()
 
+    def load_ssim(self):
+        if os.path.exists(self.save_file):
+            infile = open(self.save_file, 'rb')
+            (self.SSIM_THRESHOLD_LIGHT_WHITE, self.SSIM_THRESHOLD_LIGHT_BLACK, self.SSIM_THRESHOLD_DARK_WHITE,
+             self.SSIM_THRESHOLD_DARK_BLACK, self.SSIM_THRESHOLD) = pickle.load(infile)
+            infile.close()
+            print(self.SSIM_THRESHOLD_LIGHT_WHITE, self.SSIM_THRESHOLD_LIGHT_BLACK, self.SSIM_THRESHOLD_DARK_WHITE,
+                  self.SSIM_THRESHOLD_DARK_BLACK)
+            self.ssim_table = [[self.SSIM_THRESHOLD_DARK_BLACK, self.SSIM_THRESHOLD_DARK_WHITE],
+                               [self.SSIM_THRESHOLD_LIGHT_BLACK, self.SSIM_THRESHOLD_LIGHT_WHITE]]
+        else:
+            print("You need to play at least 1 game before starting a game from position.")
+            sys.exit(0)
 
     def get_square_image(self, row, column,
                          board_img):
