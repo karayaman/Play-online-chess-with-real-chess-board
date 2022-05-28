@@ -45,6 +45,9 @@ def log_process(process, finish_message):
     start.grid(row=0, column=0)
     board = tk.Button(button_frame, text="Board Calibration", command=board_calibration)
     board.grid(row=0, column=1)
+    if promotion_menu.cget("state") == "normal":
+        promotion.set(PROMOTION_OPTIONS[0])
+        promotion_menu.configure(state="disabled")
 
 
 def stop_process(ignore=None):
@@ -95,6 +98,9 @@ def start_game(ignore=None):
     global token
     if token:
         arguments.append("token=" + token)
+        promotion_menu.configure(state="normal")
+        promotion.set(PROMOTION_OPTIONS[0])
+
     arguments.append("delay=" + str(values.index(default_value.get())))
 
     selected_camera = camera.get()
@@ -204,35 +210,55 @@ voice_menu = tk.OptionMenu(voice_frame, voice, *VOICE_OPTIONS)
 voice_menu.config(width=max(len(option) for option in VOICE_OPTIONS), anchor="w")
 voice_menu.grid(column=1, row=0, sticky=tk.W)
 
+
+def save_promotion(*args):
+    outfile = open("promotion.bin", 'wb')
+    pickle.dump(promotion.get(), outfile)
+    outfile.close()
+
+
+promotion_frame = tk.Frame(window)
+promotion_frame.grid(row=2, column=0, columnspan=2, sticky="W")
+promotion = tk.StringVar()
+promotion.trace("w", save_promotion)
+PROMOTION_OPTIONS = ["Queen", "Knight", "Rook", "Bishop"]
+promotion.set(PROMOTION_OPTIONS[0])
+promotion_label = tk.Label(promotion_frame, text='Promotion piece:')
+promotion_label.grid(column=0, row=0, sticky=tk.W)
+promotion_menu = tk.OptionMenu(promotion_frame, promotion, *PROMOTION_OPTIONS)
+promotion_menu.config(width=max(len(option) for option in PROMOTION_OPTIONS), anchor="w")
+promotion_menu.grid(column=1, row=0, sticky=tk.W)
+promotion_menu.configure(state="disabled")
+
 c = tk.Checkbutton(window, text="Find chess board of online game without template images.", variable=no_template)
-c.grid(row=2, column=0, sticky="W", columnspan=1)
+c.grid(row=3, column=0, sticky="W", columnspan=1)
 
 c1 = tk.Checkbutton(window, text="Make moves of opponent too.", variable=make_opponent)
-c1.grid(row=3, column=0, sticky="W", columnspan=1)
+c1.grid(row=4, column=0, sticky="W", columnspan=1)
 
 c2 = tk.Checkbutton(window, text="Make moves by drag and drop.", variable=drag_drop)
-c2.grid(row=4, column=0, sticky="W", columnspan=1)
-
-c2 = tk.Checkbutton(window, text="Say my moves.", variable=comment_me)
 c2.grid(row=5, column=0, sticky="W", columnspan=1)
 
+c2 = tk.Checkbutton(window, text="Say my moves.", variable=comment_me)
+c2.grid(row=6, column=0, sticky="W", columnspan=1)
+
 c3 = tk.Checkbutton(window, text="Say opponent's moves.", variable=comment_opponent)
-c3.grid(row=6, column=0, sticky="W", columnspan=1)
+c3.grid(row=7, column=0, sticky="W", columnspan=1)
 
 values = ["Do not delay game start.", "1 second delayed game start."] + [str(i) + " seconds delayed game start." for i
                                                                          in range(2, 6)]
 default_value = tk.StringVar()
 s = tk.Spinbox(window, values=values, textvariable=default_value, width=max(len(value) for value in values))
 default_value.set(values[-1])
-s.grid(row=7, column=0, sticky="W", columnspan=2)
+s.grid(row=8, column=0, sticky="W", columnspan=2)
 button_frame = tk.Frame(window)
-button_frame.grid(row=8, column=0, columnspan=2, sticky="W")
+button_frame.grid(row=9, column=0, columnspan=2, sticky="W")
 start = tk.Button(button_frame, text="Start Game", command=start_game)
 start.grid(row=0, column=0)
 board = tk.Button(button_frame, text="Board Calibration", command=board_calibration)
 board.grid(row=0, column=1)
 text_frame = tk.Frame(window)
-text_frame.grid(row=9, column=0)
+text_frame.grid(row=10, column=0)
 scroll_bar = tk.Scrollbar(text_frame)
 logs_text = tk.Text(text_frame, background='gray', yscrollcommand=scroll_bar.set)
 scroll_bar.config(command=logs_text.yview)
