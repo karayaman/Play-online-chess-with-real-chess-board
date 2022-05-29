@@ -5,6 +5,7 @@ import chess
 import pickle
 import os
 
+
 class Board_basics:
     def __init__(self, side_view_compensation, rotation_count):
         self.d = [side_view_compensation, (0, 0)]
@@ -85,6 +86,27 @@ class Board_basics:
         else:
             print("You need to play at least 1 game before starting a game from position.")
             sys.exit(0)
+
+    def update_ssim(self, previous_frame, next_frame, move, is_capture, color):
+        from_square = chess.square_name(move.from_square)
+        to_square = chess.square_name(move.to_square)
+        for row in range(8):
+            for column in range(8):
+                square_name = self.convert_row_column_to_square_name(row, column)
+                if square_name not in [from_square, to_square]:
+                    continue
+                previous_square = self.get_square_image(row, column, previous_frame)
+                next_square = self.get_square_image(row, column, next_frame)
+                ssim = structural_similarity(next_square, previous_square, channel_axis=-1)
+                ssim = ssim + 0.1
+                if ssim > self.SSIM_THRESHOLD:
+                    self.SSIM_THRESHOLD = ssim
+                    print("new threshold is " + str(ssim))
+                is_light = int(self.is_light(square_name))
+                if (square_name == from_square) or (not is_capture):
+                    if ssim > self.ssim_table[is_light][color]:
+                        self.ssim_table[is_light][color] = ssim
+                        print((is_light, color, ssim))
 
     def get_square_image(self, row, column,
                          board_img):
