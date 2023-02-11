@@ -313,3 +313,55 @@ class Italian:
             comment += " promuove a " + self.name(promotion)
         comment += check
         return comment
+
+
+class French:
+    def __init__(self):
+        self.game_started = "Partie démarrée"
+        self.move_failed = "La reconnaissance a échoué. Veuillez réessayer."
+
+    def name(self, piece_type):
+        if piece_type == chess.PAWN:
+            return "pion"
+        elif piece_type == chess.KNIGHT:
+            return "cavalier"
+        elif piece_type == chess.BISHOP:
+            return "fou"
+        elif piece_type == chess.ROOK:
+            return "tour"
+        elif piece_type == chess.QUEEN:
+            return "reine"
+        elif piece_type == chess.KING:
+            return "roi"
+
+    def comment(self, board, move):
+        check = ""
+        if board.is_checkmate():
+            check = " échec et mat"
+        elif board.is_check():
+            check = " échec"
+        board.pop()
+        if board.is_kingside_castling(move):
+            board.push(move)
+            return "petit roc" + check
+        if board.is_queenside_castling(move):
+            board.push(move)
+            return "grand roc" + check
+
+        piece = board.piece_at(move.from_square)
+        from_square = chess.square_name(move.from_square)
+        to_square = chess.square_name(move.to_square)
+        promotion = move.promotion
+
+        is_capture = board.is_capture(move)
+        board.push(move)
+        comment = ""
+        comment += self.name(piece.piece_type)
+
+        comment += " " + from_square
+        comment += " prend" if is_capture else " vers"
+        comment += " " + to_square
+        if promotion:
+            comment += " promu en " + self.name(promotion)
+        comment += check
+        return comment
