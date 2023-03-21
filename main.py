@@ -21,7 +21,7 @@ drag_drop = False
 comment_me = False
 comment_opponent = False
 start_delay = 5  # seconds
-cap_index = 4
+cap_index = 0
 cap_api = cv2.CAP_ANY
 voice_index = 0
 language = languages.English()
@@ -62,7 +62,7 @@ for argument in sys.argv:
         elif "French" in argument:
             language = languages.French()
     elif argument.startswith("token="):
-        token = argument[len("token=") :].strip()
+        token = argument[len("token="):].strip()
 MOTION_START_THRESHOLD = 1.0
 HISTORY = 100
 MAX_MOVE_MEAN = 50
@@ -72,7 +72,8 @@ move_fgbg = cv2.createBackgroundSubtractorKNN()
 motion_fgbg = cv2.createBackgroundSubtractorKNN(history=HISTORY)
 
 with pl.Path("constants.bin").open("rb") as infile:
-    corners, side_view_compensation, rotation_count, roi_mask = pickle.load(infile)
+    corners, side_view_compensation, rotation_count, roi_mask = pickle.load(
+        infile)
 board_basics = BoardBasics(side_view_compensation, rotation_count)
 
 speech_thread = SpeechThread()
@@ -100,7 +101,8 @@ video_capture_thread.capture = cv2.VideoCapture(cap_index, cap_api)
 video_capture_thread.start()
 
 pts1 = np.float32(
-    [list(corners[0][0]), list(corners[8][0]), list(corners[0][8]), list(corners[8][8])]
+    [list(corners[0][0]), list(corners[8][0]),
+     list(corners[0][8]), list(corners[8][8])]
 )
 
 
