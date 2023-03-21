@@ -2,17 +2,16 @@ from threading import Thread
 from queue import Queue
 
 
-class Video_capture_thread(Thread):
-
+class VideoCaptureThread(Thread):
     def __init__(self, *args, **kwargs):
-        super(Video_capture_thread, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.queue = Queue()
         self.capture = None
 
     def run(self):
         while True:
             ret, frame = self.capture.read()
-            if ret == False:
+            if ret is False:
                 continue
             self.queue.put(frame)
 

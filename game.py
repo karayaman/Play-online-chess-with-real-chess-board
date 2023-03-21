@@ -1,25 +1,41 @@
+"""
+hog: Histogram of Oriented Gradients
+"""
+import pathlib as pl
+import pickle
+import sys
 import time
 
 import chess
 import cv2
 import numpy as np
-import pickle
-import os
-import sys
+
+from commentator import CommentatorThread
 from helper import detect_state, get_square_image
-from internet_game import Internet_game
-from lichess_game import Lichess_game
-from commentator import Commentator_thread
-from lichess_commentator import Lichess_commentator
+from internet_game import InternetGame
+from lichess_game import LichessGame
+from lichess_commentator import LichessCommentator
 
 
 class Game:
-    def __init__(self, board_basics, speech_thread, use_template, make_opponent, start_delay, comment_me,
-                 comment_opponent, drag_drop, language, token, roi_mask):
+    def __init__(
+        self,
+        board_basics,
+        speech_thread,
+        use_template,
+        make_opponent,
+        start_delay,
+        comment_me,
+        comment_opponent,
+        drag_drop,
+        language,
+        token,
+        roi_mask,
+    ):
         if token:
-            self.internet_game = Lichess_game(token)
+            self.internet_game = LichessGame(token)
         else:
-            self.internet_game = Internet_game(use_template, start_delay, drag_drop)
+            self.internet_game = InternetGame(use_template, start_delay, drag_drop)
         self.make_opponent = make_opponent
         self.board_basics = board_basics
         self.speech_thread = speech_thread
@@ -34,26 +50,36 @@ class Game:
         self.knn = cv2.ml.KNearest_create()
         self.features = None
         self.labels = None
-        self.save_file = 'hog.bin'
+        self.save_file = pl.Path("hog.bin")
 
         if token:
-            commentator_thread = Lichess_commentator()
+            commentator_thread = LichessCommentator()
             commentator_thread.daemon = True
-            commentator_thread.stream = self.internet_game.client.board.stream_game_state(self.internet_game.game_id)
+            commentator_thread.stream = (
+                self.internet_game.client.board.stream_game_state(
+                    self.internet_game.game_id
+                )
+            )
             commentator_thread.speech_thread = self.speech_thread
-            commentator_thread.game_state.we_play_white = self.internet_game.we_play_white
+            commentator_thread.game_state.we_play_white = (
+                self.internet_game.we_play_white
+            )
             commentator_thread.game_state.game = self
             commentator_thread.comment_me = self.comment_me
             commentator_thread.comment_opponent = self.comment_opponent
             commentator_thread.language = self.language
             self.commentator = commentator_thread
         else:
-            commentator_thread = Commentator_thread()
+            commentator_thread = CommentatorThread()
             commentator_thread.daemon = True
             commentator_thread.speech_thread = self.speech_thread
             commentator_thread.game_state.game_thread = self
-            commentator_thread.game_state.we_play_white = self.internet_game.we_play_white
-            commentator_thread.game_state.board_position_on_screen = self.internet_game.position
+            commentator_thread.game_state.we_play_white = (
+                self.internet_game.we_play_white
+            )
+            commentator_thread.game_state.board_position_on_screen = (
+                self.internet_game.position
+            )
             commentator_thread.comment_me = self.comment_me
             commentator_thread.comment_opponent = self.comment_opponent
             commentator_thread.language = self.language
@@ -65,7 +91,9 @@ class Game:
         squares = []
         for row in range(8):
             for column in range(8):
-                square_name = self.board_basics.convert_row_column_to_square_name(row, column)
+                square_name = self.board_basics.convert_row_column_to_square_name(
+                    row, column
+                )
                 square = chess.parse_square(square_name)
                 piece = self.board.piece_at(square)
                 square_image = get_square_image(row, column, frame)
@@ -86,45 +114,57 @@ class Game:
         self.features = features
         self.labels = labels
 
-        outfile = open(self.save_file, 'wb')
-        pickle.dump([features, labels], outfile)
-        outfile.close()
+        with self.save_file.open("wb") as outfile:
+            pickle.dump([features, labels], outfile)
 
     def load_hog(self):
-        if os.path.exists(self.save_file):
-            infile = open(self.save_file, 'rb')
-            self.features, self.labels = pickle.load(infile)
-            infile.close()
+        if self.save_file.exists():
+            with self.save_file.open("rb") as infile:
+                self.features, self.labels = pickle.load(infile)
             self.knn.train(self.features, cv2.ml.ROW_SAMPLE, self.labels)
         else:
-            print("You need to play at least 1 game before starting a game from position.")
+            print(
+                "You need to play at least 1 game before starting a game from position."
+            )
             sys.exit(0)
 
     def detect_state_hog(self, chessboard_image):
         chessboard_image = cv2.cvtColor(chessboard_image, cv2.COLOR_BGR2GRAY)
-        chessboard = [[get_square_image(row, column, chessboard_image) for column in range(8)] for row
-                      in
-                      range(8)]
+        chessboard = [
+            [get_square_image(row, column, chessboard_image) for column in range(8)]
+            for row in range(8)
+        ]
 
-        board_hog = [[self.hog.compute(cv2.resize(chessboard[row][column], (64, 64))) for column in range(8)] for row
-                     in
-                     range(8)]
+        board_hog = [
+            [
+                self.hog.compute(cv2.resize(chessboard[row][column], (64, 64)))
+                for column in range(8)
+            ]
+            for row in range(8)
+        ]
         knn_result = []
         for row in range(8):
             knn_row = []
             for column in range(8):
-                ret, result, neighbours, dist = self.knn.findNearest(np.array([board_hog[row][column]]), k=3)
+                _, result, _, _ = self.knn.findNearest(
+                    np.array([board_hog[row][column]]), k=3
+                )
                 knn_row.append(result[0][0])
             knn_result.append(knn_row)
-        board_state = [[knn_result[row][column] > 0.5 for column in range(8)] for row
-                       in
-                       range(8)]
+        board_state = [
+            [knn_result[row][column] > 0.5 for column in range(8)] for row in range(8)
+        ]
         return board_state
 
     def get_valid_move_hog(self, fgmask, frame):
         print("Hog working")
-        board = [[self.board_basics.get_square_image(row, column, fgmask).mean() for column in range(8)] for row in
-                 range(8)]
+        board = [
+            [
+                self.board_basics.get_square_image(row, column, fgmask).mean()
+                for column in range(8)
+            ]
+            for row in range(8)
+        ]
         potential_squares = []
         square_scores = {}
         for row in range(8):
@@ -132,7 +172,9 @@ class Game:
                 score = board[row][column]
                 if score < 10.0:
                     continue
-                square_name = self.board_basics.convert_row_column_to_square_name(row, column)
+                square_name = self.board_basics.convert_row_column_to_square_name(
+                    row, column
+                )
                 square = chess.parse_square(square_name)
                 potential_squares.append(square)
                 square_scores[square] = score
@@ -143,41 +185,43 @@ class Game:
         board_result = self.detect_state_hog(frame)
         if move_to_register:
             if (move_to_register.from_square in potential_squares) and (
-                    move_to_register.to_square in potential_squares):
+                move_to_register.to_square in potential_squares
+            ):
                 self.board.push(move_to_register)
                 if self.check_state_hog(board_result):
                     print("Hog!")
                     self.board.pop()
                     return True, move_to_register.uci()
+                self.board.pop()
+                return False, ""
+        for move in self.board.legal_moves:
+            if (move.from_square in potential_squares) and (
+                move.to_square in potential_squares
+            ):
+                if move.promotion and move.promotion != chess.QUEEN:
+                    continue
+                self.board.push(move)
+                if self.check_state_hog(board_result):
+                    self.board.pop()
+                    total_score = (
+                        square_scores[move.from_square] + square_scores[move.to_square]
+                    )
+                    potential_moves.append((total_score, move.uci()))
                 else:
                     self.board.pop()
-                    return False, ""
-        else:
-            for move in self.board.legal_moves:
-                if (move.from_square in potential_squares) and (move.to_square in potential_squares):
-                    if move.promotion and move.promotion != chess.QUEEN:
-                        continue
-                    self.board.push(move)
-                    if self.check_state_hog(board_result):
-                        self.board.pop()
-                        total_score = square_scores[move.from_square] + square_scores[move.to_square]
-                        potential_moves.append((total_score, move.uci()))
-                    else:
-                        self.board.pop()
         if potential_moves:
             print("Hog!")
             return True, max(potential_moves)[1]
-        else:
-            return False, ""
+        return False, ""
 
     def get_move_to_register(self):
         if self.commentator:
-            if len(self.executed_moves) < len(self.commentator.game_state.registered_moves):
-                return self.commentator.game_state.registered_moves[len(self.executed_moves)]
-            else:
-                return None
-        else:
-            return None
+            if len(self.executed_moves) < len(
+                self.commentator.game_state.registered_moves
+            ):
+                return self.commentator.game_state.registered_moves[
+                    len(self.executed_moves)
+                ]
 
     def is_light_change(self, frame):
         result = detect_state(frame, self.board_basics.d[0], self.roi_mask)
@@ -186,13 +230,14 @@ class Game:
         if state:
             print("Light change")
             return True
-        else:
-            return False
+        return False
 
     def check_state_hog(self, result):
         for row in range(8):
             for column in range(8):
-                square_name = self.board_basics.convert_row_column_to_square_name(row, column)
+                square_name = self.board_basics.convert_row_column_to_square_name(
+                    row, column
+                )
                 square = chess.parse_square(square_name)
                 piece = self.board.piece_at(square)
                 if piece and (not result[row][column]):
@@ -206,7 +251,9 @@ class Game:
     def check_state_for_move(self, result):
         for row in range(8):
             for column in range(8):
-                square_name = self.board_basics.convert_row_column_to_square_name(row, column)
+                square_name = self.board_basics.convert_row_column_to_square_name(
+                    row, column
+                )
                 square = chess.parse_square(square_name)
                 piece = self.board.piece_at(square)
                 if piece and (True not in result[row][column]):
@@ -222,7 +269,9 @@ class Game:
             for column in range(8):
                 if len(result[row][column]) > 1:
                     result[row][column] = [result_hog[row][column]]
-                square_name = self.board_basics.convert_row_column_to_square_name(row, column)
+                square_name = self.board_basics.convert_row_column_to_square_name(
+                    row, column
+                )
                 square = chess.parse_square(square_name)
                 piece = self.board.piece_at(square)
                 if piece and (False in result[row][column]):
@@ -235,8 +284,13 @@ class Game:
 
     def get_valid_move_canny(self, fgmask, frame):
         print("Canny working")
-        board = [[self.board_basics.get_square_image(row, column, fgmask).mean() for column in range(8)] for row in
-                 range(8)]
+        board = [
+            [
+                self.board_basics.get_square_image(row, column, fgmask).mean()
+                for column in range(8)
+            ]
+            for row in range(8)
+        ]
         potential_squares = []
         square_scores = {}
         for row in range(8):
@@ -244,7 +298,9 @@ class Game:
                 score = board[row][column]
                 if score < 10.0:
                     continue
-                square_name = self.board_basics.convert_row_column_to_square_name(row, column)
+                square_name = self.board_basics.convert_row_column_to_square_name(
+                    row, column
+                )
                 square = chess.parse_square(square_name)
                 potential_squares.append(square)
                 square_scores[square] = score
@@ -255,38 +311,42 @@ class Game:
         board_result = detect_state(frame, self.board_basics.d[0], self.roi_mask)
         if move_to_register:
             if (move_to_register.from_square in potential_squares) and (
-                    move_to_register.to_square in potential_squares):
+                move_to_register.to_square in potential_squares
+            ):
                 self.board.push(move_to_register)
                 if self.check_state_for_move(board_result):
                     print("Canny!")
                     self.board.pop()
                     return True, move_to_register.uci()
+                self.board.pop()
+                return False, ""
+        for move in self.board.legal_moves:
+            if (move.from_square in potential_squares) and (
+                move.to_square in potential_squares
+            ):
+                if move.promotion and move.promotion != chess.QUEEN:
+                    continue
+                self.board.push(move)
+                if self.check_state_for_move(board_result):
+                    self.board.pop()
+                    total_score = (
+                        square_scores[move.from_square] + square_scores[move.to_square]
+                    )
+                    potential_moves.append((total_score, move.uci()))
                 else:
                     self.board.pop()
-                    return False, ""
-        else:
-            for move in self.board.legal_moves:
-                if (move.from_square in potential_squares) and (move.to_square in potential_squares):
-                    if move.promotion and move.promotion != chess.QUEEN:
-                        continue
-                    self.board.push(move)
-                    if self.check_state_for_move(board_result):
-                        self.board.pop()
-                        total_score = square_scores[move.from_square] + square_scores[move.to_square]
-                        potential_moves.append((total_score, move.uci()))
-                    else:
-                        self.board.pop()
         if potential_moves:
             print("Canny!")
             return True, max(potential_moves)[1]
-        else:
-            return False, ""
+        return False, ""
 
     def register_move(self, fgmask, previous_frame, next_frame):
-        potential_squares, potential_moves = self.board_basics.get_potential_moves(fgmask, previous_frame,
-                                                                                   next_frame,
-                                                                                   self.board)
-        success, valid_move_string = self.get_valid_move(potential_squares, potential_moves)
+        potential_squares, potential_moves = self.board_basics.get_potential_moves(
+            fgmask, previous_frame, next_frame, self.board
+        )
+        success, valid_move_string = self.get_valid_move(
+            potential_squares, potential_moves
+        )
         print("Valid move string:" + valid_move_string)
         if not success:
             success, valid_move_string = self.get_valid_move_canny(fgmask, next_frame)
@@ -326,7 +386,9 @@ class Game:
         self.internet_game.is_our_turn = not self.internet_game.is_our_turn
 
         self.learn(next_frame)
-        self.board_basics.update_ssim(previous_frame, next_frame, valid_move_UCI, is_capture, color)
+        self.board_basics.update_ssim(
+            previous_frame, next_frame, valid_move_UCI, is_capture, color
+        )
         return True
 
     def learn(self, frame):
@@ -337,26 +399,36 @@ class Game:
 
         for row in range(8):
             for column in range(8):
-                square_name = self.board_basics.convert_row_column_to_square_name(row, column)
+                square_name = self.board_basics.convert_row_column_to_square_name(
+                    row, column
+                )
                 square = chess.parse_square(square_name)
                 piece = self.board.piece_at(square)
                 if piece and (not result[row][column]):
                     print("Learning piece at " + square_name)
-                    piece_hog = self.hog.compute(cv2.resize(get_square_image(row, column, frame), (64, 64)))
+                    piece_hog = self.hog.compute(
+                        cv2.resize(get_square_image(row, column, frame), (64, 64))
+                    )
                     new_pieces.append(piece_hog)
                 if (not piece) and (result[row][column]):
                     print("Learning empty at " + square_name)
-                    square_hog = self.hog.compute(cv2.resize(get_square_image(row, column, frame), (64, 64)))
+                    square_hog = self.hog.compute(
+                        cv2.resize(get_square_image(row, column, frame), (64, 64))
+                    )
                     new_squares.append(square_hog)
         labels_pieces = np.ones((len(new_pieces), 1), np.int32)
         labels_squares = np.zeros((len(new_squares), 1), np.int32)
         if new_pieces:
             new_pieces = np.array(new_pieces)
-            self.features = np.float32(np.concatenate((self.features, new_pieces), axis=0))
+            self.features = np.float32(
+                np.concatenate((self.features, new_pieces), axis=0)
+            )
             self.labels = np.concatenate((self.labels, labels_pieces), axis=0)
         if new_squares:
             new_squares = np.array(new_squares)
-            self.features = np.float32(np.concatenate((self.features, new_squares), axis=0))
+            self.features = np.float32(
+                np.concatenate((self.features, new_squares), axis=0)
+            )
             self.labels = np.concatenate((self.labels, labels_squares), axis=0)
 
         self.features = self.features[:100]
@@ -375,7 +447,7 @@ class Game:
         move_to_register = self.get_move_to_register()
 
         valid_move_string = ""
-        for score, start, arrival in potential_moves:
+        for _, start, arrival in potential_moves:
             if valid_move_string:
                 break
 
@@ -388,7 +460,7 @@ class Game:
             uci_move = start + arrival
             try:
                 move = chess.Move.from_uci(uci_move)
-            except Exception as e:
+            except chess.InvalidMoveError as e:
                 print(e)
                 continue
 
@@ -398,7 +470,7 @@ class Game:
                 if move_to_register:
                     uci_move_promoted = move_to_register.uci()
                 else:
-                    uci_move_promoted = uci_move + 'q'
+                    uci_move_promoted = uci_move + "q"
                 promoted_move = chess.Move.from_uci(uci_move_promoted)
                 if promoted_move in self.board.legal_moves:
                     valid_move_string = uci_move_promoted
@@ -407,23 +479,43 @@ class Game:
         potential_squares = [square[1] for square in potential_squares]
         print(potential_squares)
         # Detect castling king side with white
-        if ("e1" in potential_squares) and ("h1" in potential_squares) and ("f1" in potential_squares) and (
-                "g1" in potential_squares) and (chess.Move.from_uci("e1g1") in self.board.legal_moves):
+        if (
+            ("e1" in potential_squares)
+            and ("h1" in potential_squares)
+            and ("f1" in potential_squares)
+            and ("g1" in potential_squares)
+            and (chess.Move.from_uci("e1g1") in self.board.legal_moves)
+        ):
             valid_move_string = "e1g1"
 
         # Detect castling queen side with white
-        if ("e1" in potential_squares) and ("a1" in potential_squares) and ("c1" in potential_squares) and (
-                "d1" in potential_squares) and (chess.Move.from_uci("e1c1") in self.board.legal_moves):
+        if (
+            ("e1" in potential_squares)
+            and ("a1" in potential_squares)
+            and ("c1" in potential_squares)
+            and ("d1" in potential_squares)
+            and (chess.Move.from_uci("e1c1") in self.board.legal_moves)
+        ):
             valid_move_string = "e1c1"
 
         # Detect castling king side with black
-        if ("e8" in potential_squares) and ("h8" in potential_squares) and ("f8" in potential_squares) and (
-                "g8" in potential_squares) and (chess.Move.from_uci("e8g8") in self.board.legal_moves):
+        if (
+            ("e8" in potential_squares)
+            and ("h8" in potential_squares)
+            and ("f8" in potential_squares)
+            and ("g8" in potential_squares)
+            and (chess.Move.from_uci("e8g8") in self.board.legal_moves)
+        ):
             valid_move_string = "e8g8"
 
         # Detect castling queen side with black
-        if ("e8" in potential_squares) and ("a8" in potential_squares) and ("c8" in potential_squares) and (
-                "d8" in potential_squares) and (chess.Move.from_uci("e8c8") in self.board.legal_moves):
+        if (
+            ("e8" in potential_squares)
+            and ("a8" in potential_squares)
+            and ("c8" in potential_squares)
+            and ("d8" in potential_squares)
+            and (chess.Move.from_uci("e8c8") in self.board.legal_moves)
+        ):
             valid_move_string = "e8c8"
 
         if move_to_register and (move_to_register.uci() != valid_move_string):
@@ -432,5 +524,4 @@ class Game:
         if valid_move_string:
             print("ssim!")
             return True, valid_move_string
-        else:
-            return False, valid_move_string
+        return False, valid_move_string

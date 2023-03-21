@@ -3,27 +3,28 @@ from queue import Queue
 import platform
 
 
-class Speech_thread(Thread):
-
+class SpeechThread(Thread):
     def __init__(self, *args, **kwargs):
-        super(Speech_thread, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.queue = Queue()
         self.index = None
 
     def run(self):
         if platform.system() == "Darwin":
             import mac_say
+
             name = mac_say.voices()[self.index][0]
             while True:
                 text = self.queue.get()
                 mac_say.say([text, "-v", name])
         else:
             import pyttsx3
+
             while True:
                 engine = pyttsx3.init()
-                voices = engine.getProperty('voices')
+                voices = engine.getProperty("voices")
                 voice = voices[self.index]
-                engine.setProperty('voice', voice.id)
+                engine.setProperty("voice", voice.id)
                 text = self.queue.get()
                 engine.say(text)
                 engine.runAndWait()

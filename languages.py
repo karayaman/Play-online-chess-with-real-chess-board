@@ -9,15 +9,15 @@ class English:
     def name(self, piece_type):
         if piece_type == chess.PAWN:
             return "pawn"
-        elif piece_type == chess.KNIGHT:
+        if piece_type == chess.KNIGHT:
             return "knight"
-        elif piece_type == chess.BISHOP:
+        if piece_type == chess.BISHOP:
             return "bishop"
-        elif piece_type == chess.ROOK:
+        if piece_type == chess.ROOK:
             return "rook"
-        elif piece_type == chess.QUEEN:
+        if piece_type == chess.QUEEN:
             return "queen"
-        elif piece_type == chess.KING:
+        if piece_type == chess.KING:
             return "king"
 
     def comment(self, board, move):
@@ -61,15 +61,15 @@ class German:
     def name(self, piece_type):
         if piece_type == chess.PAWN:
             return "Bauer"
-        elif piece_type == chess.KNIGHT:
+        if piece_type == chess.KNIGHT:
             return "Springer"
-        elif piece_type == chess.BISHOP:
+        if piece_type == chess.BISHOP:
             return "Läufer"
-        elif piece_type == chess.ROOK:
+        if piece_type == chess.ROOK:
             return "Turm"
-        elif piece_type == chess.QUEEN:
+        if piece_type == chess.QUEEN:
             return "Dame"
-        elif piece_type == chess.KING:
+        if piece_type == chess.KING:
             return "König"
 
     def comment(self, board, move):
@@ -113,15 +113,15 @@ class Russian:
     def name(self, piece_type):
         if piece_type == chess.PAWN:
             return "пешка"
-        elif piece_type == chess.KNIGHT:
+        if piece_type == chess.KNIGHT:
             return "конь"
-        elif piece_type == chess.BISHOP:
+        if piece_type == chess.BISHOP:
             return "слон"
-        elif piece_type == chess.ROOK:
+        if piece_type == chess.ROOK:
             return "ладья"
-        elif piece_type == chess.QUEEN:
+        if piece_type == chess.QUEEN:
             return "ферзь"
-        elif piece_type == chess.KING:
+        if piece_type == chess.KING:
             return "король"
 
     def comment(self, board, move):
@@ -165,28 +165,25 @@ class Turkish:
     def capture_suffix(self, to_square):
         if to_square[-1] in "158":
             return "i"
-        elif to_square[-1] in "27":
+        if to_square[-1] in "27":
             return "yi"
-        elif to_square[-1] in "34":
+        if to_square[-1] in "34":
             return "ü"
-        else:  # 6
-            return "yı"
+        return "yı"
 
     def from_suffix(self, from_square):
         if from_square[-1] in "1278":
             return "den"
-        elif from_square[-1] in "345":
+        if from_square[-1] in "345":
             return "ten"
-        else:  # 6
-            return "dan"
+        return "dan"
 
     def to_suffix(self, to_square):
         if to_square[-1] in "13458":
             return "e"
-        elif to_square[-1] in "27":
+        if to_square[-1] in "27":
             return "ye"
-        else:  # 6
-            return "ya"
+        return "ya"
 
     def comment(self, board, move):
         check = ""
@@ -228,7 +225,14 @@ class Turkish:
             comment += " alır"
             comment += " " + to_square + "'" + self.capture_suffix(to_square)
         else:
-            comment += "'" + self.from_suffix(from_square) + " " + to_square + "'" + self.to_suffix(to_square)
+            comment += (
+                "'"
+                + self.from_suffix(from_square)
+                + " "
+                + to_square
+                + "'"
+                + self.to_suffix(to_square)
+            )
 
         if promotion:
             comment += " "
@@ -248,34 +252,36 @@ class Turkish:
 class Italian:
     def __init__(self):
         self.game_started = "Gioco iniziato"
-        self.move_failed = "Registrazione spostamento non riuscita. Per favore rifai la tua mossa."
+        self.move_failed = (
+            "Registrazione spostamento non riuscita. Per favore rifai la tua mossa."
+        )
 
     def name(self, piece_type):
         if piece_type == chess.PAWN:
             return "pedone"
-        elif piece_type == chess.KNIGHT:
+        if piece_type == chess.KNIGHT:
             return "cavallo"
-        elif piece_type == chess.BISHOP:
+        if piece_type == chess.BISHOP:
             return "alfiere"
-        elif piece_type == chess.ROOK:
+        if piece_type == chess.ROOK:
             return "torre"
-        elif piece_type == chess.QUEEN:
+        if piece_type == chess.QUEEN:
             return "regina"
-        elif piece_type == chess.KING:
+        if piece_type == chess.KING:
             return "re"
 
     def prefix_name(self, piece_type):
         if piece_type == chess.PAWN:
             return "il pedone"
-        elif piece_type == chess.KNIGHT:
+        if piece_type == chess.KNIGHT:
             return "il cavallo"
-        elif piece_type == chess.BISHOP:
+        if piece_type == chess.BISHOP:
             return "l'alfiere"
-        elif piece_type == chess.ROOK:
+        if piece_type == chess.ROOK:
             return "la torre"
-        elif piece_type == chess.QUEEN:
+        if piece_type == chess.QUEEN:
             return "la regina"
-        elif piece_type == chess.KING:
+        if piece_type == chess.KING:
             return "il re"
 
     def comment(self, board, move):
@@ -323,15 +329,15 @@ class French:
     def name(self, piece_type):
         if piece_type == chess.PAWN:
             return "pion"
-        elif piece_type == chess.KNIGHT:
+        if piece_type == chess.KNIGHT:
             return "cavalier"
-        elif piece_type == chess.BISHOP:
+        if piece_type == chess.BISHOP:
             return "fou"
-        elif piece_type == chess.ROOK:
+        if piece_type == chess.ROOK:
             return "tour"
-        elif piece_type == chess.QUEEN:
+        if piece_type == chess.QUEEN:
             return "reine"
-        elif piece_type == chess.KING:
+        if piece_type == chess.KING:
             return "roi"
 
     def comment(self, board, move):
