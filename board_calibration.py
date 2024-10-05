@@ -29,8 +29,6 @@ if show_info:
     root.withdraw()
     messagebox.showinfo("Board Calibration",
                         'Board calibration will start. It should detect corners of the chess board almost immediately. If it does not, you should press key "q" to stop board calibration and change webcam/board position.')
-    if platform_name == "Darwin":
-        root.destroy()
 
 
 def mark_corners(frame, augmented_corners, rotation_count):

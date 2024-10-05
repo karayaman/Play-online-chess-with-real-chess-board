@@ -90,3 +90,18 @@ def detect_state(frame, view, roi_mask):
     result = [[contains_piece(board_image[row][column], view) for column in range(8)] for row in
               range(8)]
     return result
+
+
+def predict(image, model):
+    image = cv2.resize(image, (64, 64))
+    image = image.astype(np.float32) / 255.0
+    image = np.transpose(image, (2, 0, 1))
+    image = np.expand_dims(image, axis=0)
+
+    # Make a forward pass through the network
+    model.setInput(image)
+    output = model.forward()
+
+    # Get the predicted class label
+    label = np.argmax(output)
+    return label

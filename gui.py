@@ -32,7 +32,7 @@ def on_closing():
 def log_process(process, finish_message):
     global button_frame
     button_stop = tk.Button(button_frame, text="Stop", command=stop_process)
-    button_stop.grid(row=0, column=0, columnspan=2, sticky="ew")
+    button_stop.grid(row=0, column=0, columnspan=3, sticky="ew")
     while True:
         output = process.stdout.readline()
         if output:
@@ -45,6 +45,8 @@ def log_process(process, finish_message):
     start.grid(row=0, column=0)
     board = tk.Button(button_frame, text="Board Calibration", command=board_calibration)
     board.grid(row=0, column=1)
+    diagnostic_button = tk.Button(button_frame, text="Diagnostic", command=diagnostic)
+    diagnostic_button.grid(row=0, column=2)
     if promotion_menu.cget("state") == "normal":
         promotion.set(PROMOTION_OPTIONS[0])
         promotion_menu.configure(state="disabled")
@@ -54,6 +56,30 @@ def stop_process(ignore=None):
     if running_process:
         if running_process.poll() is None:
             running_process.terminate()
+
+
+def diagnostic(ignore=None):
+    arguments = [sys.executable, "diagnostic.py"]
+    # arguments = ["diagnostic.exe"]
+    # working_directory = sys.argv[0][:-3]
+    # arguments = [working_directory+"diagnostic"]
+    selected_camera = camera.get()
+    if selected_camera != OPTIONS[0]:
+        cap_index = OPTIONS.index(selected_camera) - 1
+        arguments.append("cap=" + str(cap_index))
+    process = subprocess.Popen(arguments, stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT)
+    # startupinfo = subprocess.STARTUPINFO()
+    # startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    # process = subprocess.Popen(arguments, stdout=subprocess.PIPE,
+    #                           stderr=subprocess.STDOUT, stdin=subprocess.PIPE, startupinfo=startupinfo)
+    # process = subprocess.Popen(arguments, stdout=subprocess.PIPE,
+    #                           stderr=subprocess.STDOUT, cwd=working_directory)
+    global running_process
+    running_process = process
+    log_thread = Thread(target=log_process, args=(process, "Diagnostic finished.\n"))
+    log_thread.daemon = True
+    log_thread.start()
 
 
 def board_calibration(ignore=None):
@@ -134,7 +160,7 @@ def start_game(ignore=None):
 
 
 window = tk.Tk()
-window.title("Play online chess with real chess board by Alper Karayaman")
+window.title("Play online chess with a real chess board by Alper Karayaman")
 
 menu_bar = tk.Menu(window)
 connection = tk.Menu(menu_bar, tearoff=False)
@@ -191,10 +217,12 @@ try:
     import platform
 
     if platform.system() == "Darwin":
-        import mac_say
-
-        for v in mac_say.voices():
-            VOICE_OPTIONS.append(v[0] + " " + v[1])
+        result = subprocess.run(['say', '-v', '?'], stdout=subprocess.PIPE)
+        output = result.stdout.decode('utf-8')
+        for line in output.splitlines():
+            if line:
+                voice_info = line.split()
+                VOICE_OPTIONS.append(f'{voice_info[0]} {voice_info[1]}')
     else:
         import pyttsx3
 
@@ -257,6 +285,8 @@ start = tk.Button(button_frame, text="Start Game", command=start_game)
 start.grid(row=0, column=0)
 board = tk.Button(button_frame, text="Board Calibration", command=board_calibration)
 board.grid(row=0, column=1)
+diagnostic_button = tk.Button(button_frame, text="Diagnostic", command=diagnostic)
+diagnostic_button.grid(row=0, column=2)
 text_frame = tk.Frame(window)
 text_frame.grid(row=10, column=0)
 scroll_bar = tk.Scrollbar(text_frame)

@@ -19,6 +19,7 @@ class Commentator_thread(Thread):
         self.classifier = None
 
     def run(self):
+        self.game_state.sct = mss.mss()
         resized_chessboard = self.game_state.get_chessboard()
         self.game_state.previous_chessboard_image = resized_chessboard
         self.game_state.classifier = Classifier(self.game_state)
