@@ -1,6 +1,8 @@
 from threading import Thread
 from queue import Queue
 import platform
+import os
+import subprocess
 
 
 class Speech_thread(Thread):
@@ -12,11 +14,16 @@ class Speech_thread(Thread):
 
     def run(self):
         if platform.system() == "Darwin":
-            import mac_say
-            name = mac_say.voices()[self.index][0]
+            result = subprocess.run(['say', '-v', '?'], stdout=subprocess.PIPE)
+            output = result.stdout.decode('utf-8')
+            voices = []
+            for line in output.splitlines():
+                if line:
+                    voices.append(line.split()[0])
+            name = voices[self.index]
             while True:
                 text = self.queue.get()
-                mac_say.say([text, "-v", name])
+                os.system(f'say -v {name} "{text}"')
         else:
             import pyttsx3
             while True:
