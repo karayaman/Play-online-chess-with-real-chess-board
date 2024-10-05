@@ -1,4 +1,4 @@
-# Play online chess with real chess board
+# Play online chess with a real chess board
 Program that enables you to play online chess using real chess boards.  Using computer vision it will detect the moves you make on a chess board. After that, if it's your turn to move in the online game, it will make the necessary clicks to make the move.
 
 ## Setup
@@ -29,7 +29,7 @@ Program that enables you to play online chess using real chess boards.  Using co
 4. Switch to the online game so that program detects chess board of online game. You have 5 seconds to complete this step. You can skip this step if you enter your Lichess API Access Token.
 5.  Wait until the program says "game started".
 6. Make your move if it's your turn , otherwise make your opponent's move.
-8. Notice that program actually makes your move on the internet game if it's your turn. Otherwise, wait until the program says starting and ending squares of the opponent's move. 
+8. Notice that program actually makes your move on the internet game if it's your turn. Otherwise, wait until the program says starting and ending squares of the opponent's move. To save clock time, you may choose not to wait, but this is not recommended.
 9. Go to step 6.
 
 ## GUI
@@ -37,6 +37,12 @@ Program that enables you to play online chess using real chess boards.  Using co
 You can run "gui.py" to open the GUI. You can use it to do the steps in Setup and Usage sections and customize how you use the software. You can click "Start Game" button instead of running "main.py" and "Board Calibration" button instead of running "board_calibration.py". Also, you can enter your Lichess API Access Token via Connection&#8594;Lichess (You need to enable "Play games with the board API" while generating the token).
 
 ![](https://github.com/karayaman/Play-online-chess-with-real-chess-board/blob/main/gui.jpg?raw=true)
+
+## Diagnostic
+
+You need to click the "Diagnostic" button to run the diagnostic process. It will show your chessboard in a perspective-transformed form, exactly as the software sees it. Additionally, it will mark white pieces with a blue circle and black pieces with a green circle, allowing you to verify if the software can detect the pieces on the chess board.
+
+![](https://github.com/karayaman/Play-online-chess-with-real-chess-board/blob/main/diagnostic.jpg?raw=true)
 
 ## Video
 
@@ -86,5 +92,4 @@ It should detect corners of the chess board almost immediately. Please do not sp
 - pyttsx3
 - scikit-image
 - pygrabber
-- mac-say
 - berserk
