@@ -273,9 +273,11 @@ class Game:
             return None
 
     def is_light_change(self, frame):
-        result = detect_state(frame, self.board_basics.d[0], self.roi_mask)
-        result_hog = self.detect_state_hog(frame)
-        state = self.check_state_for_light(result, result_hog)
+        state = False
+        if self.roi_mask is not None:
+            result = detect_state(frame, self.board_basics.d[0], self.roi_mask)
+            result_hog = self.detect_state_hog(frame)
+            state = self.check_state_for_light(result, result_hog)
         if state:
             print("Light change")
             return True
@@ -331,6 +333,8 @@ class Game:
         return True
 
     def get_valid_move_canny(self, fgmask, frame):
+        if self.roi_mask is None:
+            return False, ""
         board = [[self.board_basics.get_square_image(row, column, fgmask).mean() for column in range(8)] for row in
                  range(8)]
         potential_squares = []

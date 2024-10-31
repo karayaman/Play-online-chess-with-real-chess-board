@@ -1,13 +1,21 @@
 import cv2
 import platform
-from math import inf, sqrt
+from math import inf
 import pickle
-from helper import rotateMatrix, perspective_transform, edge_detection
+
+from board_calibration_machine_learning import detect_board
+from helper import rotateMatrix, perspective_transform, edge_detection, euclidean_distance
 import numpy as np
 import sys
 from tkinter import messagebox
 import tkinter as tk
 
+filename = 'constants.bin'
+corner_model = cv2.dnn.readNetFromONNX("yolo_corner.onnx")
+piece_model = cv2.dnn.readNetFromONNX("cnn_piece.onnx")
+color_model = cv2.dnn.readNetFromONNX("cnn_color.onnx")
+
+is_machine_learning = False
 show_info = False
 cap_index = 0
 cap_api = cv2.CAP_ANY
@@ -23,6 +31,8 @@ for argument in sys.argv:
             cap_api = cv2.CAP_V4L2
         else:
             cap_api = cv2.CAP_DSHOW
+    elif argument == "ml":
+        is_machine_learning = True
 
 if show_info:
     root = tk.Tk()
@@ -78,110 +88,135 @@ while True:
     if ret == False:
         print("Error reading frame. Please check your webcam connection.")
         continue
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    retval, corners = cv2.findChessboardCorners(gray, patternSize=board_dimensions)
-    if retval:
-        if show_info:
-            if platform_name == "Darwin":
-                root = tk.Tk()
-                root.withdraw()
-            messagebox.showinfo("Chess Board Detected",
-                                'Please check that corners of your chess board are correctly detected. The square covered by points (0,0), (0,1),(1,0) and (1,1) should be a8. You can rotate the image by pressing key "r" to adjust that. Press key "q" to save detected chess board corners and finish board calibration.')
-            root.destroy()
-        if corners[0][0][0] > corners[-1][0][0]:  # corners returned in reverse order
-            corners = corners[::-1]
-        minX, maxX, minY, maxY = inf, -inf, inf, -inf
-        augmented_corners = []
-        row = []
-        for i in range(6):
-            corner1 = corners[i]
-            corner2 = corners[i + 8]
-            x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
-            y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
-            row.append((x, y))
-
-        for i in range(4, 7):
-            corner1 = corners[i]
-            corner2 = corners[i + 6]
-            x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
-            y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
-            row.append((x, y))
-
-        augmented_corners.append(row)
-
-        for i in range(7):
+    if is_machine_learning:
+        result = detect_board(frame, corner_model, piece_model, color_model)
+        if result:
+            pts1, side_view_compensation, rotation_count = result
+            outfile = open(filename, 'wb')
+            pickle.dump([is_machine_learning, [pts1, side_view_compensation, rotation_count]], outfile)
+            outfile.close()
+            if show_info:
+                if platform_name == "Darwin":
+                    root = tk.Tk()
+                    root.withdraw()
+                messagebox.showinfo(
+                    "Chess Board Detected",
+                    "Please ensure your chess board is correctly positioned and detected. "
+                    "Guiding lines will be drawn to mark the board's edges:\n"
+                    "- The line near the white pieces will be blue.\n"
+                    "- The line near the black pieces will be green.\n\n"
+                    "Press any key to exit once you've confirmed the board setup."
+                )
+                root.destroy()
+            cv2.imshow('frame', frame)
+            cv2.waitKey(0)
+            cap.release()
+            cv2.destroyAllWindows()
+            sys.exit(0)
+    else:
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        retval, corners = cv2.findChessboardCorners(gray, patternSize=board_dimensions)
+        if retval:
+            if show_info:
+                if platform_name == "Darwin":
+                    root = tk.Tk()
+                    root.withdraw()
+                messagebox.showinfo("Chess Board Detected",
+                                    'Please check that corners of your chess board are correctly detected. The square covered by points (0,0), (0,1),(1,0) and (1,1) should be a8. You can rotate the image by pressing key "r" to adjust that. Press key "q" to save detected chess board corners and finish board calibration.')
+                root.destroy()
+            if corners[0][0][0] > corners[-1][0][0]:  # corners returned in reverse order
+                corners = corners[::-1]
+            minX, maxX, minY, maxY = inf, -inf, inf, -inf
+            augmented_corners = []
             row = []
-            corner1 = corners[i * 7]
-            corner2 = corners[i * 7 + 1]
-            x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
-            y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
-            row.append((x, y))
-
-            for corner in corners[i * 7:(i + 1) * 7]:
-                x = corner[0][0]
-                y = corner[0][1]
+            for i in range(6):
+                corner1 = corners[i]
+                corner2 = corners[i + 8]
+                x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
+                y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
                 row.append((x, y))
 
-            corner1 = corners[i * 7 + 6]
-            corner2 = corners[i * 7 + 5]
-            x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
-            y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
-            row.append((x, y))
+            for i in range(4, 7):
+                corner1 = corners[i]
+                corner2 = corners[i + 6]
+                x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
+                y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
+                row.append((x, y))
+
             augmented_corners.append(row)
 
-        row = []
-        for i in range(6):
-            corner1 = corners[42 + i]
-            corner2 = corners[42 + i - 6]
-            x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
-            y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
-            row.append((x, y))
+            for i in range(7):
+                row = []
+                corner1 = corners[i * 7]
+                corner2 = corners[i * 7 + 1]
+                x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
+                y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
+                row.append((x, y))
 
-        for i in range(4, 7):
-            corner1 = corners[42 + i]
-            corner2 = corners[42 + i - 8]
-            x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
-            y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
-            row.append((x, y))
+                for corner in corners[i * 7:(i + 1) * 7]:
+                    x = corner[0][0]
+                    y = corner[0][1]
+                    row.append((x, y))
 
-        augmented_corners.append(row)
+                corner1 = corners[i * 7 + 6]
+                corner2 = corners[i * 7 + 5]
+                x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
+                y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
+                row.append((x, y))
+                augmented_corners.append(row)
 
-        while augmented_corners[0][0][0] > augmented_corners[8][8][0] or augmented_corners[0][0][1] > \
-                augmented_corners[8][8][1]:
-            rotateMatrix(augmented_corners)
+            row = []
+            for i in range(6):
+                corner1 = corners[42 + i]
+                corner2 = corners[42 + i - 6]
+                x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
+                y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
+                row.append((x, y))
 
-        pts1 = np.float32([list(augmented_corners[0][0]), list(augmented_corners[8][0]), list(augmented_corners[0][8]),
-                           list(augmented_corners[8][8])])
+            for i in range(4, 7):
+                corner1 = corners[42 + i]
+                corner2 = corners[42 + i - 8]
+                x = corner1[0][0] + (corner1[0][0] - corner2[0][0])
+                y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
+                row.append((x, y))
 
-        empty_board = perspective_transform(frame, pts1)
-        edges = edge_detection(empty_board)
-        # cv2.imshow("edge", edges)
-        # cv2.waitKey(0)
-        kernel = np.ones((7, 7), np.uint8)
-        edges = cv2.dilate(edges, kernel, iterations=1)
-        roi_mask = cv2.bitwise_not(edges)
-        # cv2.imshow("edge", edges)
-        # cv2.waitKey(0)
-        # cv2.imshow("roi", roi_mask)
-        # cv2.waitKey(0)
-        roi_mask[:7, :] = 0
-        roi_mask[:, :7] = 0
-        roi_mask[-7:, :] = 0
-        roi_mask[:, -7:] = 0
-        # cv2.imshow("roi", roi_mask)
-        # cv2.waitKey(0)
-        # cv2.imwrite("empty_board.jpg", empty_board)
+            augmented_corners.append(row)
 
-        rotation_count = 0
-        while True:
-            cv2.imshow('frame', mark_corners(frame.copy(), augmented_corners, rotation_count))
-            response = cv2.waitKey(0)
-            if response & 0xFF == ord('r'):
-                rotation_count += 1
-                rotation_count %= 4
-            elif response & 0xFF == ord('q'):
-                break
-        break
+            while augmented_corners[0][0][0] > augmented_corners[8][8][0] or augmented_corners[0][0][1] > \
+                    augmented_corners[8][8][1]:
+                rotateMatrix(augmented_corners)
+
+            pts1 = np.float32([list(augmented_corners[0][0]), list(augmented_corners[8][0]), list(augmented_corners[0][8]),
+                               list(augmented_corners[8][8])])
+            empty_board = perspective_transform(frame, pts1)
+            edges = edge_detection(empty_board)
+            # cv2.imshow("edge", edges)
+            # cv2.waitKey(0)
+            kernel = np.ones((7, 7), np.uint8)
+            edges = cv2.dilate(edges, kernel, iterations=1)
+            roi_mask = cv2.bitwise_not(edges)
+            # cv2.imshow("edge", edges)
+            # cv2.waitKey(0)
+            # cv2.imshow("roi", roi_mask)
+            # cv2.waitKey(0)
+            roi_mask[:7, :] = 0
+            roi_mask[:, :7] = 0
+            roi_mask[-7:, :] = 0
+            roi_mask[:, -7:] = 0
+            # cv2.imshow("roi", roi_mask)
+            # cv2.waitKey(0)
+            # cv2.imwrite("empty_board.jpg", empty_board)
+
+            rotation_count = 0
+            while True:
+                cv2.imshow('frame', mark_corners(frame.copy(), augmented_corners, rotation_count))
+                response = cv2.waitKey(0)
+                if response & 0xFF == ord('r'):
+                    rotation_count += 1
+                    rotation_count %= 4
+                elif response & 0xFF == ord('q'):
+                    break
+            break
 
     cv2.imshow('frame', frame)
     if cv2.waitKey(3) & 0xFF == ord('q'):
@@ -189,11 +224,6 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
-
-
-def euclidean_distance(first, second):
-    return sqrt((first[0] - second[0]) ** 2 + (first[1] - second[1]) ** 2)
-
 
 first_row = euclidean_distance(augmented_corners[1][1], augmented_corners[1][7])
 last_row = euclidean_distance(augmented_corners[7][1], augmented_corners[7][7])
@@ -213,7 +243,7 @@ else:
 
 print("Side view compensation" + str(side_view_compensation))
 print("Rotation count " + str(rotation_count))
-filename = 'constants.bin'
+
 outfile = open(filename, 'wb')
-pickle.dump([augmented_corners, side_view_compensation, rotation_count, roi_mask], outfile)
+pickle.dump([is_machine_learning, [augmented_corners, side_view_compensation, rotation_count, roi_mask]], outfile)
 outfile.close()

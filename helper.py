@@ -1,5 +1,10 @@
 import cv2
 import numpy as np
+from math import sqrt
+
+
+def euclidean_distance(first, second):
+    return sqrt((first[0] - second[0]) ** 2 + (first[1] - second[1]) ** 2)
 
 
 def perspective_transform(image, pts1):
