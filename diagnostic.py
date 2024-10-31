@@ -1,22 +1,73 @@
 import cv2
 import numpy as np
 import pickle
+
+from board_calibration_machine_learning import detect_board
 from helper import perspective_transform, predict
 import platform
 import sys
 import tkinter as tk
 from tkinter import messagebox
 
-filename = 'constants.bin'
-infile = open(filename, 'rb')
-corners, side_view_compensation, rotation_count, roi_mask = pickle.load(infile)
-infile.close()
+calibrate = False
+cap_index = 0
+cap_api = cv2.CAP_ANY
+platform_name = platform.system()
+for argument in sys.argv:
+    if argument.startswith("cap="):
+        cap_index = int("".join(c for c in argument if c.isdigit()))
+        if platform_name == "Darwin":
+            cap_api = cv2.CAP_AVFOUNDATION
+        elif platform_name == "Linux":
+            cap_api = cv2.CAP_V4L2
+        else:
+            cap_api = cv2.CAP_DSHOW
+    elif argument == "calibrate":
+        calibrate = True
 
-pts1 = np.float32([list(corners[0][0]), list(corners[8][0]), list(corners[0][8]),
-                   list(corners[8][8])])
-
+corner_model = cv2.dnn.readNetFromONNX("yolo_corner.onnx")
 piece_model = cv2.dnn.readNetFromONNX("cnn_piece.onnx")
 color_model = cv2.dnn.readNetFromONNX("cnn_color.onnx")
+
+
+cap = cv2.VideoCapture(cap_index, cap_api)
+
+if not cap.isOpened():
+    print("Couldn't open your webcam. Please check your webcam connection.")
+    sys.exit(0)
+
+
+for _ in range(10):
+    ret, frame = cap.read()
+
+if calibrate:
+    is_detected = False
+    for _ in range(100):
+        ret, frame = cap.read()
+        if not ret:
+            print("Error reading frame. Please check your webcam connection.")
+            continue
+        result = detect_board(frame, corner_model, piece_model, color_model)
+        if result:
+            pts1, side_view_compensation, rotation_count = result
+            is_detected = True
+            break
+
+    if not is_detected:
+        print("Could not detect the chess board.")
+        cap.release()
+        sys.exit(0)
+else:
+    filename = 'constants.bin'
+    infile = open(filename, 'rb')
+    calibration_data = pickle.load(infile)
+    infile.close()
+    if calibration_data[0]:
+        pts1, side_view_compensation, rotation_count = calibration_data[1]
+    else:
+        corners, side_view_compensation, rotation_count, roi_mask = calibration_data[1]
+        pts1 = np.float32([list(corners[0][0]), list(corners[8][0]), list(corners[0][8]),
+                           list(corners[8][8])])
 
 
 def process(image):
@@ -41,47 +92,23 @@ def process(image):
     return image
 
 
-cap_index = 0
-cap_api = cv2.CAP_ANY
-platform_name = platform.system()
-for argument in sys.argv:
-    if argument.startswith("cap="):
-        cap_index = int("".join(c for c in argument if c.isdigit()))
-        if platform_name == "Darwin":
-            cap_api = cv2.CAP_AVFOUNDATION
-        elif platform_name == "Linux":
-            cap_api = cv2.CAP_V4L2
-        else:
-            cap_api = cv2.CAP_DSHOW
-
 root = tk.Tk()
 root.withdraw()
 messagebox.showinfo("Diagnostic",
                     "The diagnostic process will start. It will mark white pieces with a blue circle and black pieces with a green circle. Press the 'q' key to exit.")
 
-cap = cv2.VideoCapture(cap_index, cap_api)
-if not cap.isOpened():
-    print("Couldn't open your webcam. Please check your webcam connection.")
-    sys.exit(0)
-
-for _ in range(10):
-    ret, frame = cap.read()
-    if ret == False:
-        print("Error reading frame. Please check your webcam connection.")
-        continue
-
 while True:
     ret, frame = cap.read()
-    if ret == False:
+    if not ret:
         print("Error reading frame. Please check your webcam connection.")
         continue
 
     frame = perspective_transform(frame, pts1)
     processed_frame = process(frame.copy())
-
+    
     cv2.imshow('Diagnostic', np.hstack((processed_frame, frame)))
 
     if cv2.waitKey(1000) & 0xFF == ord('q'):
         break
-
+cap.release()
 cv2.destroyAllWindows()

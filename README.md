@@ -4,37 +4,50 @@ Program that enables you to play online chess using real chess boards.  Using co
 ## Setup
 
 1. Turn off all the animations and extra features to keep chess board of online game as simple as possible. You can skip this step if you enter your Lichess API Access Token. 
-
 2. Take screenshots of the chess board of an online game at starting position, one for when you play white and one for when you play black and save them as "white.JPG" and "black.JPG" similar to the images included in the source code. You can skip this step if you enable "Find chess board of online game without template images." option or enter your Lichess API Access Token.
-
 3. Enable auto-promotion to queen from settings of online game. You can skip this step if you enter your Lichess API Access Token.
-
 4. Place your webcam near to your chessboard so that all of the squares and pieces can be clearly seen by it.
+5. Select a board calibration mode and follow its instructions.
 
-5. Remove all pieces from your chess board.
+## Board Calibration(The board is empty.)
 
-6. Run "board_calibration.py"(Alternatively, click "Board Calibration" button in the GUI).
+1. Remove all pieces from your chess board.
 
-7. Check that corners of your chess board are correctly detected by "board_calibration.py" and press key "q" to save detected chess board corners. You don't need to manually select chess board corners; it should be automatically detected by the program. The square covered by points (0,0), (0,1),(1,0) and (1,1) should be a8. You can rotate the image by pressing the key "r" to adjust that. Example chess board detection result:
+2. Click the "Board Calibration" button.
+
+3. Check that corners of your chess board are correctly detected by "board_calibration.py" and press key "q" to save detected chess board corners. You don't need to manually select chess board corners; it should be automatically detected by the program. The square covered by points (0,0), (0,1),(1,0) and (1,1) should be a8. You can rotate the image by pressing the key "r" to adjust that. Example chess board detection result:
 
    ![](https://github.com/karayaman/Play-online-chess-with-real-chess-board/blob/main/chessboard_detection_result.jpg?raw=true)
 
-8. Note that "constants.bin" file is created or modified.
+## Board Calibration(Pieces are in their starting positions.)
+
+1. Place the pieces in their starting positions.
+2. Click the "Board Calibration" button.
+3. Please ensure your chess board is correctly positioned and detected. Guiding lines will be drawn to mark the board's edges:
+   - The line near the white pieces will be blue.
+   - The line near the black pieces will be green.
+   - Press any key to exit once you've confirmed the board setup.
+
+<img src="https://github.com/karayaman/Play-online-chess-with-real-chess-board/raw/main/board_detection_result.jpg" style="zoom:67%;" />
+
+## Board Calibration(Just before the game starts.)
+
+1. Click the "Start Game" button. The software will calibrate the board just before it begins move recognition.
 
 ## Usage
 
 1. Place pieces of chess board to their starting position.
 2. Start the online game.
-3. Run "main.py"(Alternatively, click "Start Game" button in the GUI).
+3. Click the "Start Game" button.
 4. Switch to the online game so that program detects chess board of online game. You have 5 seconds to complete this step. You can skip this step if you enter your Lichess API Access Token.
 5.  Wait until the program says "game started".
 6. Make your move if it's your turn , otherwise make your opponent's move.
-8. Notice that program actually makes your move on the internet game if it's your turn. Otherwise, wait until the program says starting and ending squares of the opponent's move. To save clock time, you may choose not to wait, but this is not recommended.
+8. Notice that the program actually makes your move on the internet game if it's your turn. Otherwise, wait until the program says starting and ending squares of the opponent's move. To save clock time, you may choose not to wait, but this is not recommended.
 9. Go to step 6.
 
 ## GUI
 
-You can run "gui.py" to open the GUI. You can use it to do the steps in Setup and Usage sections and customize how you use the software. You can click "Start Game" button instead of running "main.py" and "Board Calibration" button instead of running "board_calibration.py". Also, you can enter your Lichess API Access Token via Connection&#8594;Lichess (You need to enable "Play games with the board API" while generating the token).
+You need to run the GUI to do the steps in Setup, Usage and Diagnostic sections. Also, you can enter your Lichess API Access Token via Connection&#8594;Lichess (You need to enable "Play games with the board API" while generating the token).
 
 ![](https://github.com/karayaman/Play-online-chess-with-real-chess-board/blob/main/gui.jpg?raw=true)
 
