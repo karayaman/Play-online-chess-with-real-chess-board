@@ -31,6 +31,9 @@ color_model = cv2.dnn.readNetFromONNX("cnn_color.onnx")
 
 
 cap = cv2.VideoCapture(cap_index, cap_api)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+cap.set(cv2.CAP_PROP_FPS, 60)
 
 if not cap.isOpened():
     print("Couldn't open your webcam. Please check your webcam connection.")

@@ -72,6 +72,9 @@ def mark_corners(frame, augmented_corners, rotation_count):
 
 
 cap = cv2.VideoCapture(cap_index, cap_api)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+cap.set(cv2.CAP_PROP_FPS, 60)
 if not cap.isOpened():
     print("Couldn't open your webcam. Please check your webcam connection.")
     sys.exit(0)
