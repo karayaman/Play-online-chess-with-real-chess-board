@@ -75,6 +75,9 @@ motion_fgbg = cv2.createBackgroundSubtractorKNN(history=HISTORY)
 video_capture_thread = Video_capture_thread()
 video_capture_thread.daemon = True
 video_capture_thread.capture = cv2.VideoCapture(cap_index, cap_api)
+video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+video_capture_thread.capture.set(cv2.CAP_PROP_FPS, 60)
 if calibrate:
     corner_model = cv2.dnn.readNetFromONNX("yolo_corner.onnx")
     piece_model = cv2.dnn.readNetFromONNX("cnn_piece.onnx")
