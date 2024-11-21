@@ -15,6 +15,9 @@ corner_model = cv2.dnn.readNetFromONNX("yolo_corner.onnx")
 piece_model = cv2.dnn.readNetFromONNX("cnn_piece.onnx")
 color_model = cv2.dnn.readNetFromONNX("cnn_color.onnx")
 
+webcam_width = None
+webcam_height = None
+fps = None
 is_machine_learning = False
 show_info = False
 cap_index = 0
@@ -33,6 +36,12 @@ for argument in sys.argv:
             cap_api = cv2.CAP_DSHOW
     elif argument == "ml":
         is_machine_learning = True
+    elif argument.startswith("width="):
+        webcam_width = int(argument[len("width="):])
+    elif argument.startswith("height="):
+        webcam_height = int(argument[len("height="):])
+    elif argument.startswith("fps="):
+        fps = int(argument[len("fps="):])
 
 if show_info:
     root = tk.Tk()
@@ -72,9 +81,13 @@ def mark_corners(frame, augmented_corners, rotation_count):
 
 
 cap = cv2.VideoCapture(cap_index, cap_api)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
-cap.set(cv2.CAP_PROP_FPS, 60)
+if webcam_width is not None:
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, webcam_width)
+if webcam_height is not None:
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, webcam_height)
+if fps is not None:
+    cap.set(cv2.CAP_PROP_FPS, fps)
+
 if not cap.isOpened():
     print("Couldn't open your webcam. Please check your webcam connection.")
     sys.exit(0)

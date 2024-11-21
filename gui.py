@@ -68,6 +68,14 @@ def diagnostic(ignore=None):
     if selected_camera != OPTIONS[0]:
         cap_index = OPTIONS.index(selected_camera) - 1
         arguments.append("cap=" + str(cap_index))
+    selected_resolution = resolution.get()
+    if selected_resolution != RESOLUTION_OPTIONS[0]:
+        width, height = selected_resolution.split(" x ")
+        arguments.append(f"width={width}")
+        arguments.append(f"height={height}")
+    selected_fps = fps.get()
+    if selected_fps != FPS_OPTIONS[0]:
+        arguments.append(f"fps={selected_fps}")
     if calibration_mode.get() == CALIBRATION_OPTIONS[-1]:
         arguments.append("calibrate")
     process = subprocess.Popen(arguments, stdout=subprocess.PIPE,
@@ -102,6 +110,14 @@ def board_calibration(ignore=None):
     if selected_camera != OPTIONS[0]:
         cap_index = OPTIONS.index(selected_camera) - 1
         arguments.append("cap=" + str(cap_index))
+    selected_resolution = resolution.get()
+    if selected_resolution != RESOLUTION_OPTIONS[0]:
+        width, height = selected_resolution.split(" x ")
+        arguments.append(f"width={width}")
+        arguments.append(f"height={height}")
+    selected_fps = fps.get()
+    if selected_fps != FPS_OPTIONS[0]:
+        arguments.append(f"fps={selected_fps}")
     if calibration_mode.get() == CALIBRATION_OPTIONS[1]:
         arguments.append("ml")
     process = subprocess.Popen(arguments, stdout=subprocess.PIPE,
@@ -146,7 +162,14 @@ def start_game(ignore=None):
     if selected_camera != OPTIONS[0]:
         cap_index = OPTIONS.index(selected_camera) - 1
         arguments.append("cap=" + str(cap_index))
-
+    selected_resolution = resolution.get()
+    if selected_resolution != RESOLUTION_OPTIONS[0]:
+        width, height = selected_resolution.split(" x ")
+        arguments.append(f"width={width}")
+        arguments.append(f"height={height}")
+    selected_fps = fps.get()
+    if selected_fps != FPS_OPTIONS[0]:
+        arguments.append(f"fps={selected_fps}")
     selected_voice = voice.get()
     if selected_voice != VOICE_OPTIONS[0]:
         voice_index = VOICE_OPTIONS.index(selected_voice) - 1
@@ -226,8 +249,30 @@ menu = tk.OptionMenu(menu_frame, camera, *OPTIONS)
 menu.config(width=max(len(option) for option in OPTIONS), anchor="w")
 menu.grid(column=1, row=0, sticky=tk.W)
 
+resolution_frame = tk.Frame(window)
+resolution_frame.grid(row=1, column=0, columnspan=2, sticky="W")
+resolution = tk.StringVar()
+RESOLUTION_OPTIONS = ["Default", "640 x 480", "1280 x 720", "1920 x 1080", "2560 x 1440", "3840 x 2160"]
+resolution.set(RESOLUTION_OPTIONS[0])
+resolution_label = tk.Label(resolution_frame, text='Select Webcam Resolution:')
+resolution_label.grid(column=0, row=0, sticky=tk.W)
+resolution_menu = tk.OptionMenu(resolution_frame, resolution, *RESOLUTION_OPTIONS)
+resolution_menu.config(width=max(len(option) for option in RESOLUTION_OPTIONS), anchor="w")
+resolution_menu.grid(column=1, row=0, sticky=tk.W)
+
+fps_frame = tk.Frame(window)
+fps_frame.grid(row=2, column=0, columnspan=2, sticky="W")
+fps = tk.StringVar()
+FPS_OPTIONS = ["Default", "15", "24", "30", "60", "120", "144", "240"]
+fps.set(FPS_OPTIONS[0])
+fps_label = tk.Label(fps_frame, text='Select Webcam FPS:')
+fps_label.grid(column=0, row=0, sticky=tk.W)
+fps_menu = tk.OptionMenu(fps_frame, fps, *FPS_OPTIONS)
+fps_menu.config(width=max(len(option) for option in FPS_OPTIONS), anchor="w")
+fps_menu.grid(column=1, row=0, sticky=tk.W)
+
 calibration_frame = tk.Frame(window)
-calibration_frame.grid(row=1, column=0, columnspan=2, sticky="W")
+calibration_frame.grid(row=3, column=0, columnspan=2, sticky="W")
 calibration_mode = tk.StringVar()
 CALIBRATION_OPTIONS = ["The board is empty.", "Pieces are in their starting positions.",
                        "Just before the game starts."]
@@ -239,7 +284,7 @@ calibration_menu.config(width=max(len(option) for option in CALIBRATION_OPTIONS)
 calibration_menu.grid(column=1, row=0, sticky=tk.W)
 
 voice_frame = tk.Frame(window)
-voice_frame.grid(row=2, column=0, columnspan=2, sticky="W")
+voice_frame.grid(row=4, column=0, columnspan=2, sticky="W")
 voice = tk.StringVar()
 VOICE_OPTIONS = ["Default"]
 try:
@@ -275,7 +320,7 @@ def save_promotion(*args):
 
 
 promotion_frame = tk.Frame(window)
-promotion_frame.grid(row=3, column=0, columnspan=2, sticky="W")
+promotion_frame.grid(row=5, column=0, columnspan=2, sticky="W")
 promotion = tk.StringVar()
 promotion.trace("w", save_promotion)
 PROMOTION_OPTIONS = ["Queen", "Knight", "Rook", "Bishop"]
@@ -288,28 +333,28 @@ promotion_menu.grid(column=1, row=0, sticky=tk.W)
 promotion_menu.configure(state="disabled")
 
 c = tk.Checkbutton(window, text="Find chess board of online game without template images.", variable=no_template)
-c.grid(row=4, column=0, sticky="W", columnspan=1)
+c.grid(row=6, column=0, sticky="W", columnspan=1)
 
 c1 = tk.Checkbutton(window, text="Make moves of opponent too.", variable=make_opponent)
-c1.grid(row=5, column=0, sticky="W", columnspan=1)
+c1.grid(row=7, column=0, sticky="W", columnspan=1)
 
 c2 = tk.Checkbutton(window, text="Make moves by drag and drop.", variable=drag_drop)
-c2.grid(row=6, column=0, sticky="W", columnspan=1)
+c2.grid(row=8, column=0, sticky="W", columnspan=1)
 
-c2 = tk.Checkbutton(window, text="Say my moves.", variable=comment_me)
-c2.grid(row=7, column=0, sticky="W", columnspan=1)
+c2 = tk.Checkbutton(window, text="Speak my moves.", variable=comment_me)
+c2.grid(row=9, column=0, sticky="W", columnspan=1)
 
-c3 = tk.Checkbutton(window, text="Say opponent's moves.", variable=comment_opponent)
-c3.grid(row=8, column=0, sticky="W", columnspan=1)
+c3 = tk.Checkbutton(window, text="Speak opponent's moves.", variable=comment_opponent)
+c3.grid(row=10, column=0, sticky="W", columnspan=1)
 
 values = ["Do not delay game start.", "1 second delayed game start."] + [str(i) + " seconds delayed game start." for i
                                                                          in range(2, 6)]
 default_value = tk.StringVar()
 s = tk.Spinbox(window, values=values, textvariable=default_value, width=max(len(value) for value in values))
 default_value.set(values[-1])
-s.grid(row=9, column=0, sticky="W", columnspan=2)
+s.grid(row=11, column=0, sticky="W", columnspan=2)
 button_frame = tk.Frame(window)
-button_frame.grid(row=10, column=0, columnspan=2, sticky="W")
+button_frame.grid(row=12, column=0, columnspan=2, sticky="W")
 start = tk.Button(button_frame, text="Start Game", command=start_game)
 start.grid(row=0, column=0)
 board = tk.Button(button_frame, text="Board Calibration", command=board_calibration)
@@ -317,14 +362,15 @@ board.grid(row=0, column=1)
 diagnostic_button = tk.Button(button_frame, text="Diagnostic", command=diagnostic)
 diagnostic_button.grid(row=0, column=2)
 text_frame = tk.Frame(window)
-text_frame.grid(row=11, column=0)
+text_frame.grid(row=13, column=0)
 scroll_bar = tk.Scrollbar(text_frame)
 logs_text = tk.Text(text_frame, background='gray', yscrollcommand=scroll_bar.set)
 scroll_bar.config(command=logs_text.yview)
 scroll_bar.pack(side=tk.RIGHT, fill=tk.Y)
 logs_text.pack(side="left")
 
-fields = [no_template, make_opponent, comment_me, comment_opponent, calibration_mode, drag_drop, default_value, camera, voice]
+fields = [no_template, make_opponent, comment_me, comment_opponent, calibration_mode, resolution, fps, drag_drop,
+          default_value, camera, voice]
 save_file = 'gui.bin'
 
 
@@ -347,7 +393,7 @@ def load_settings():
         if variables[-3] in OPTIONS:
             camera.set(variables[-3])
 
-        for i in range(7):
+        for i in range(9):
             fields[i].set(variables[i])
 
 

@@ -13,6 +13,9 @@ from speech import Speech_thread
 from videocapture import Video_capture_thread
 from languages import *
 
+webcam_width = None
+webcam_height = None
+fps = None
 use_template = True
 make_opponent = False
 drag_drop = False
@@ -64,6 +67,12 @@ for argument in sys.argv:
         token = argument[len("token="):].strip()
     elif argument == "calibrate":
         calibrate = True
+    elif argument.startswith("width="):
+        webcam_width = int(argument[len("width="):])
+    elif argument.startswith("height="):
+        webcam_height = int(argument[len("height="):])
+    elif argument.startswith("fps="):
+        fps = int(argument[len("fps="):])
 MOTION_START_THRESHOLD = 1.0
 HISTORY = 100
 MAX_MOVE_MEAN = 50
@@ -75,9 +84,12 @@ motion_fgbg = cv2.createBackgroundSubtractorKNN(history=HISTORY)
 video_capture_thread = Video_capture_thread()
 video_capture_thread.daemon = True
 video_capture_thread.capture = cv2.VideoCapture(cap_index, cap_api)
-video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
-video_capture_thread.capture.set(cv2.CAP_PROP_FPS, 60)
+if webcam_width is not None:
+    video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_WIDTH, webcam_width)
+if webcam_height is not None:
+    video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, webcam_height)
+if fps is not None:
+    video_capture_thread.capture.set(cv2.CAP_PROP_FPS, fps)
 if calibrate:
     corner_model = cv2.dnn.readNetFromONNX("yolo_corner.onnx")
     piece_model = cv2.dnn.readNetFromONNX("cnn_piece.onnx")
